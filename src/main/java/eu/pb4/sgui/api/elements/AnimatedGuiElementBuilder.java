@@ -12,7 +12,6 @@ import net.minecraft.nbt.NbtHelper;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.nbt.NbtString;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.Util;
 import org.jetbrains.annotations.Nullable;
@@ -267,11 +266,9 @@ public class AnimatedGuiElementBuilder implements GuiElementBuilderInterface<Ani
     public AnimatedGuiElementBuilder setSkullOwner(GameProfile profile, @Nullable MinecraftServer server) {
         if (profile.getId() != null && server != null) {
             if (server.getSessionService().getTextures(profile, false).isEmpty()) {
-                var tmp = server.getSessionService().fetchProfile(profile.getId(), false);
-                if (tmp != null) {
-                    profile = tmp.profile();
-                }
-            }            this.getOrCreateNbt().put("SkullOwner", NbtHelper.writeGameProfile(new NbtCompound(), profile));
+                profile = server.getSessionService().fillProfileProperties(profile, false);
+            }
+			this.getOrCreateNbt().put("SkullOwner", NbtHelper.writeGameProfile(new NbtCompound(), profile));
         } else {
             this.getOrCreateNbt().putString("SkullOwner", profile.getName());
         }

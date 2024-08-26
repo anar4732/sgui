@@ -14,17 +14,13 @@ import eu.pb4.sgui.virtual.inventory.VirtualScreenHandler;
 import eu.pb4.sgui.virtual.merchant.VirtualMerchantScreenHandler;
 import io.netty.buffer.Unpooled;
 import net.minecraft.item.ItemStack;
-import net.minecraft.network.ClientConnection;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.network.message.LastSeenMessageList;
 import net.minecraft.network.packet.Packet;
 import net.minecraft.network.packet.c2s.play.*;
 import net.minecraft.network.packet.s2c.play.*;
 import net.minecraft.screen.ScreenHandler;
-import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.filter.FilteredMessage;
-import net.minecraft.server.network.ConnectedClientData;
-import net.minecraft.server.network.ServerCommonNetworkHandler;
 import net.minecraft.server.network.ServerPlayNetworkHandler;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
@@ -40,19 +36,17 @@ import java.util.List;
 import java.util.Optional;
 
 @Mixin(ServerPlayNetworkHandler.class)
-public abstract class ServerPlayNetworkHandlerMixin extends ServerCommonNetworkHandler {
+public abstract class ServerPlayNetworkHandlerMixin {
 
     @Unique
     private ScreenHandler sgui$previousScreen = null;
 
     @Shadow
     public ServerPlayerEntity player;
-
-    public ServerPlayNetworkHandlerMixin(MinecraftServer server, ClientConnection connection, ConnectedClientData clientData) {
-        super(server, connection, clientData);
-    }
-
-    @Inject(method = "onClickSlot", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/network/ServerPlayerEntity;updateLastActionTime()V", shift = At.Shift.AFTER), cancellable = true)
+	
+	@Shadow public abstract void sendPacket(Packet<?> packet);
+	
+	@Inject(method = "onClickSlot", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/network/ServerPlayerEntity;updateLastActionTime()V", shift = At.Shift.AFTER), cancellable = true)
     private void sgui$handleGuiClicks(ClickSlotC2SPacket packet, CallbackInfo ci) {
         if (this.player.currentScreenHandler instanceof VirtualScreenHandler handler) {
             try {

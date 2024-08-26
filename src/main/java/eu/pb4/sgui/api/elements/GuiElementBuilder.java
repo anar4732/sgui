@@ -10,10 +10,7 @@ import net.minecraft.item.Items;
 import net.minecraft.nbt.*;
 import net.minecraft.registry.Registries;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
-import net.minecraft.text.TextColor;
-import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.Util;
 import org.jetbrains.annotations.Nullable;
@@ -274,10 +271,7 @@ public class GuiElementBuilder implements GuiElementBuilderInterface<GuiElementB
     public GuiElementBuilder setSkullOwner(GameProfile profile, @Nullable MinecraftServer server) {
         if (profile.getId() != null && server != null) {
             if (server.getSessionService().getTextures(profile, false).isEmpty()) {
-                var tmp = server.getSessionService().fetchProfile(profile.getId(), false);
-                if (tmp != null) {
-                    profile = tmp.profile();
-                }
+                profile = server.getSessionService().fillProfileProperties(profile, false);
             }
 
             this.getOrCreateNbt().put("SkullOwner", NbtHelper.writeGameProfile(new NbtCompound(), profile));
