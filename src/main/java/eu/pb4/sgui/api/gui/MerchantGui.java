@@ -4,7 +4,7 @@ import eu.pb4.sgui.virtual.SguiScreenHandlerFactory;
 import eu.pb4.sgui.virtual.merchant.VirtualMerchant;
 import eu.pb4.sgui.virtual.merchant.VirtualMerchantContainerMenu;
 import eu.pb4.sgui.virtual.merchant.VirtualTradeOutputSlot;
-import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.TextComponent;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.inventory.MerchantContainer;
@@ -42,7 +42,7 @@ public class MerchantGui extends SimpleGui {
         super(MenuType.MERCHANT, player, manipulatePlayerSlots);
         this.merchant = new VirtualMerchant(player);
         this.merchantInventory = new MerchantContainer(this.merchant);
-        this.setTitle(Component.empty());
+        this.setTitle(new TextComponent(""));
 
         this.setSlotRedirect(0, new Slot(this.merchantInventory, 0, 0, 0));
         this.setSlotRedirect(1, new Slot(this.merchantInventory, 1, 0, 0));

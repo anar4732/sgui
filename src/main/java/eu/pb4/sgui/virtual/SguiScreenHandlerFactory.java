@@ -4,6 +4,7 @@ import eu.pb4.sgui.api.gui.GuiInterface;
 import eu.pb4.sgui.api.gui.SlotGuiInterface;
 import eu.pb4.sgui.virtual.inventory.VirtualContainerMenu;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.TextComponent;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
@@ -16,7 +17,7 @@ public record SguiScreenHandlerFactory<T extends GuiInterface>(T gui, MenuConstr
     public Component getDisplayName() {
         Component text = this.gui.getTitle();
         if (text == null) {
-            text = Component.empty();
+            text = new TextComponent("");
         }
         return text;
     }

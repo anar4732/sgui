@@ -13,12 +13,12 @@ import eu.pb4.sgui.virtual.inventory.VirtualContainerMenu;
 import eu.pb4.sgui.virtual.merchant.VirtualMerchantContainerMenu;
 import io.netty.buffer.Unpooled;
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.TextComponent;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.*;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.server.network.FilteredText;
 import net.minecraft.server.network.ServerGamePacketListenerImpl;
+import net.minecraft.server.network.TextFilter;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.Vec3;
@@ -165,11 +165,11 @@ public abstract class ServerPlayNetworkHandlerMixin {
     }
 
     @Inject(method = "updateSignText", at = @At("HEAD"), cancellable = true)
-    private void sgui$catchSignUpdate(ServerboundSignUpdatePacket packet, List<FilteredText> signText, CallbackInfo ci) {
+    private void sgui$catchSignUpdate(ServerboundSignUpdatePacket packet, List<TextFilter.FilteredText> signText, CallbackInfo ci) {
         try {
             if (this.player.containerMenu instanceof FakeContainerMenu fake && fake.getGui() instanceof SignGui gui) {
                 for (int i = 0; i < packet.getLines().length; i++) {
-                    gui.setLineInternal(i, Component.literal(packet.getLines()[i]));
+                    gui.setLineInternal(i, new TextComponent(packet.getLines()[i]));
                 }
                 gui.close(true);
                 ci.cancel();
@@ -247,7 +247,6 @@ public abstract class ServerPlayNetworkHandlerMixin {
                 this.send(new ClientboundBlockUpdatePacket(pos, this.player. getLevel().getBlockState(pos)));
                 pos = pos.relative(packet.getHitResult().getDirection());
                 this.send(new ClientboundBlockUpdatePacket(pos, this.player.level.getBlockState(pos)));
-                this.send(new ClientboundBlockChangedAckPacket(packet.getSequence()));
 
                 ci.cancel();
             }
@@ -268,7 +267,6 @@ public abstract class ServerPlayNetworkHandlerMixin {
                 this.send(new ClientboundBlockUpdatePacket(pos, this.player.level.getBlockState(pos)));
                 pos = pos.relative(packet.getDirection());
                 this.send(new ClientboundBlockUpdatePacket(pos, this.player.level.getBlockState(pos)));
-                this.send(new ClientboundBlockChangedAckPacket(packet.getSequence()));
                 ci.cancel();
             }
         }

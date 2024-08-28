@@ -9,9 +9,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.entity.player.ProfilePublicKey;
 import net.minecraft.world.level.Level;
-import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
@@ -30,8 +28,8 @@ public abstract class ServerPlayerEntityMixin extends Player implements PlayerEx
     @Unique
     private boolean sgui$ignoreNext = false;
 	
-	public ServerPlayerEntityMixin(Level pLevel, BlockPos pPos, float pYRot, GameProfile pGameProfile, @Nullable ProfilePublicKey pProfilePublicKey, boolean sgui$ignoreNext) {
-		super(pLevel, pPos, pYRot, pGameProfile, pProfilePublicKey);
+	public ServerPlayerEntityMixin(Level pLevel, BlockPos pPos, float pYRot, GameProfile pGameProfile, boolean sgui$ignoreNext) {
+		super(pLevel, pPos, pYRot, pGameProfile);
 		this.sgui$ignoreNext = sgui$ignoreNext;
 	}
 	
