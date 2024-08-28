@@ -3,7 +3,7 @@ package eu.pb4.sgui.api.elements;
 import com.mojang.authlib.GameProfile;
 import eu.pb4.sgui.api.GuiHelpers;
 import net.minecraft.Util;
-import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.Registry;
 import net.minecraft.nbt.*;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -95,7 +95,7 @@ public class GuiElementBuilder implements GuiElementBuilderInterface<GuiElementB
 
         if (stack.isEnchanted()) {
             for (Tag enc : stack.getEnchantmentTags()) {
-                BuiltInRegistries.ENCHANTMENT.getOptional(ResourceLocation.tryParse(((CompoundTag) enc).getString("id"))).ifPresent(enchantment -> builder.enchant(enchantment, ((CompoundTag) enc).getInt("lvl")));
+                Registry.ENCHANTMENT.getOptional(ResourceLocation.tryParse(((CompoundTag) enc).getString("id"))).ifPresent(enchantment -> builder.enchant(enchantment, ((CompoundTag) enc).getInt("lvl")));
             }
             tag.remove("Enchantments");
         }

@@ -77,9 +77,9 @@ public class VirtualContainerMenu extends AbstractContainerMenu implements Virtu
     @Override
     public void setItem(int slot, int i, ItemStack stack) {
         if (this.gui.getSize() <= slot) {
-            this.getSlot(slot).setByPlayer(stack);
+            this.getSlot(slot).set(stack);
         } else {
-            this.getSlot(slot).setByPlayer(ItemStack.EMPTY);
+            this.getSlot(slot).set(ItemStack.EMPTY);
         }
     }
 
@@ -109,7 +109,7 @@ public class VirtualContainerMenu extends AbstractContainerMenu implements Virtu
             }
 
             if (itemStack2.isEmpty()) {
-                slot.setByPlayer(ItemStack.EMPTY);
+                slot.set(ItemStack.EMPTY);
             } else {
                 slot.setChanged();
             }
@@ -202,9 +202,9 @@ public class VirtualContainerMenu extends AbstractContainerMenu implements Virtu
                 itemStack = slot2.getItem();
                 if (itemStack.isEmpty() && slot2.mayPlace(stack)) {
                     if (stack.getCount() > slot2.getMaxStackSize()) {
-                        slot2.setByPlayer(stack.split(slot2.getMaxStackSize()));
+                        slot2.set(stack.split(slot2.getMaxStackSize()));
                     } else {
-                        slot2.setByPlayer(stack.split(stack.getCount()));
+                        slot2.set(stack.split(stack.getCount()));
                     }
 
                     slot2.setChanged();

@@ -55,7 +55,7 @@ public class SignGui implements GuiInterface {
      */
     public SignGui(ServerPlayer player)  {
         this.player = player;
-        this.signEntity = new VirtualSignBlockEntity(new BlockPos(player.blockPosition().getX(), Math.min(player.level().getMaxBuildHeight() - 1, player.blockPosition().getY() + 5), player.blockPosition().getZ()), Blocks.OAK_SIGN.defaultBlockState());
+        this.signEntity = new VirtualSignBlockEntity(new BlockPos(player.blockPosition().getX(), Math.min(player.level.getMaxBuildHeight() - 1, player.blockPosition().getY() + 5), player.blockPosition().getZ()), Blocks.OAK_SIGN.defaultBlockState());
     }
 
     /**
@@ -65,11 +65,11 @@ public class SignGui implements GuiInterface {
      * @param text the Text for the line, note that all formatting is stripped when the player closes the sign
      */
     public void setLine(int line, Component text) {
-        this.signEntity.updateText(signText -> signText.setMessage(line, text), true);
+        this.signEntity.setMessage(line, text);
         this.sendLineUpdate.add(line);
         this.texts[line] = text;
 
-        if (this.open & this.autoUpdate) {
+        if (this.open && this.autoUpdate) {
             this.updateSign();
         }
     }
@@ -90,7 +90,7 @@ public class SignGui implements GuiInterface {
      * @param color the default sign color
      */
     public void setColor(DyeColor color) {
-        this.signEntity.updateText(signText -> signText.setColor(color), true);
+        this.signEntity.color = color;
 
         if (this.open && this.autoUpdate) {
             this.updateSign();
@@ -131,6 +131,7 @@ public class SignGui implements GuiInterface {
     public ServerPlayer getPlayer() {
         return this.player;
     }
+	
     @Override
     public boolean isOpen() {
         return this.open;
@@ -150,7 +151,7 @@ public class SignGui implements GuiInterface {
 
         this.player.connection.send(new ClientboundBlockUpdatePacket(this.signEntity.getBlockPos(), this.type));
         this.player.connection.send(this.signEntity.getUpdatePacket());
-        this.player.connection.send(new ClientboundOpenSignEditorPacket(this.signEntity.getBlockPos(), true));
+        this.player.connection.send(new ClientboundOpenSignEditorPacket(this.signEntity.getBlockPos()));
 
         this.reOpen = false;
         this.open = true;
@@ -164,7 +165,7 @@ public class SignGui implements GuiInterface {
             this.open = false;
             this.reOpen = false;
 
-            this.player.connection.send(new ClientboundBlockUpdatePacket(player.serverLevel(), signEntity.getBlockPos()));
+            this.player.connection.send(new ClientboundBlockUpdatePacket(player.level, signEntity.getBlockPos()));
 
             if (alreadyClosed && this.player.containerMenu == this.screenHandler) {
                 this.player.doCloseContainer();
@@ -197,7 +198,7 @@ public class SignGui implements GuiInterface {
         if (this.reOpen && this.sendLineUpdate.contains(line)) {
             this.sendLineUpdate.remove((Integer) line);
         } else {
-            this.signEntity.getFrontText().setMessage(line, text);
+            this.signEntity.setMessage(line, text);
             this.texts[line] = text;
         }
     }

@@ -32,7 +32,7 @@ public class VirtualSlot extends Slot {
 
 
     @Override
-    public void setByPlayer(ItemStack stack) {
+    public void set(ItemStack stack) {
 
     }
 

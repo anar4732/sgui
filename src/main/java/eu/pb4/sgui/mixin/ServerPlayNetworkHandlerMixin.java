@@ -8,14 +8,12 @@ import eu.pb4.sgui.api.gui.SignGui;
 import eu.pb4.sgui.api.gui.SimpleGui;
 import eu.pb4.sgui.virtual.FakeContainerMenu;
 import eu.pb4.sgui.virtual.VirtualContainerMenuInterface;
-import eu.pb4.sgui.virtual.book.BookContainerMenu;
 import eu.pb4.sgui.virtual.hotbar.HotbarContainerMenu;
 import eu.pb4.sgui.virtual.inventory.VirtualContainerMenu;
 import eu.pb4.sgui.virtual.merchant.VirtualMerchantContainerMenu;
 import io.netty.buffer.Unpooled;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.LastSeenMessages;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.*;
 import net.minecraft.server.level.ServerPlayer;
@@ -32,7 +30,6 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import java.util.List;
-import java.util.Optional;
 
 @Mixin(ServerGamePacketListenerImpl.class)
 public abstract class ServerPlayNetworkHandlerMixin {
@@ -85,8 +82,6 @@ public abstract class ServerPlayNetworkHandlerMixin {
                 ci.cancel();
             }
 
-            ci.cancel();
-        } else if (this.player.containerMenu instanceof BookContainerMenu) {
             ci.cancel();
         }
     }
@@ -249,9 +244,9 @@ public abstract class ServerPlayNetworkHandlerMixin {
                     screenHandler.slotsOld.set(45, ItemStack.EMPTY);
                 }
 
-                this.send(new ClientboundBlockUpdatePacket(pos, this.player. serverLevel().getBlockState(pos)));
+                this.send(new ClientboundBlockUpdatePacket(pos, this.player. getLevel().getBlockState(pos)));
                 pos = pos.relative(packet.getHitResult().getDirection());
-                this.send(new ClientboundBlockUpdatePacket(pos, this.player.serverLevel().getBlockState(pos)));
+                this.send(new ClientboundBlockUpdatePacket(pos, this.player.level.getBlockState(pos)));
                 this.send(new ClientboundBlockChangedAckPacket(packet.getSequence()));
 
                 ci.cancel();
@@ -270,9 +265,9 @@ public abstract class ServerPlayNetworkHandlerMixin {
                     screenHandler.slotsOld.set(gui.getSelectedSlot() + 36, ItemStack.EMPTY);
                     screenHandler.slotsOld.set(45, ItemStack.EMPTY);
                 }
-                this.send(new ClientboundBlockUpdatePacket(pos, this.player.serverLevel().getBlockState(pos)));
+                this.send(new ClientboundBlockUpdatePacket(pos, this.player.level.getBlockState(pos)));
                 pos = pos.relative(packet.getDirection());
-                this.send(new ClientboundBlockUpdatePacket(pos, this.player.serverLevel().getBlockState(pos)));
+                this.send(new ClientboundBlockUpdatePacket(pos, this.player.level.getBlockState(pos)));
                 this.send(new ClientboundBlockChangedAckPacket(packet.getSequence()));
                 ci.cancel();
             }
@@ -308,32 +303,6 @@ public abstract class ServerPlayNetworkHandlerMixin {
                     screenHandler.slotsOld.set(45, ItemStack.EMPTY);
                 }
                 ci.cancel();
-            }
-        }
-    }
-
-    @Inject(method = {"lambda$handleChat$10", "m_244887_", "method_44900"}, at = @At("HEAD"), cancellable = true)
-    private void sgui$onMessage(ServerboundChatPacket packet, Optional<LastSeenMessages> optional, CallbackInfo ci) {
-        if (this.player.containerMenu instanceof BookContainerMenu handler) {
-            try {
-                if (handler.getGui().onCommand(packet.message())) {
-                    ci.cancel();
-                }
-            } catch (Throwable e) {
-                handler.getGui().handleException(e);
-            }
-        }
-    }
-
-    @Inject(method = {"lambda$handleChatCommand$11", "m_244885_", "method_44356"}, at = @At("HEAD"), cancellable = true)
-    private void sgui$onCommand(ServerboundChatCommandPacket packet, Optional<LastSeenMessages> optional, CallbackInfo ci) {
-        if (this.player.containerMenu instanceof BookContainerMenu handler) {
-            try {
-                if (handler.getGui().onCommand("/" + packet.command())) {
-                    ci.cancel();
-                }
-            } catch (Throwable e) {
-                handler.getGui().handleException(e);
             }
         }
     }

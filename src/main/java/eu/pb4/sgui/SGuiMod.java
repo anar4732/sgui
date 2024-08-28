@@ -38,7 +38,7 @@ public class SGuiMod {
 				
 				@Override
 				public void onTick() {
-					this.setSlot(0, new GuiElementBuilder(Items.ARROW).setCount((int) (player.level().getGameTime() % 127)));
+					this.setSlot(0, new GuiElementBuilder(Items.ARROW).setCount((int) (player.level.getGameTime() % 127)));
 					super.onTick();
 				}
 				

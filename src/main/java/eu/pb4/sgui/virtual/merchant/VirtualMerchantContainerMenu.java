@@ -61,7 +61,7 @@ public class VirtualMerchantContainerMenu extends VirtualContainerMenu {
             }
 
             if (clickedStack.isEmpty()) {
-                slot.setByPlayer(ItemStack.EMPTY);
+                slot.set(ItemStack.EMPTY);
             } else {
                 slot.setChanged();
             }
@@ -80,7 +80,7 @@ public class VirtualMerchantContainerMenu extends VirtualContainerMenu {
     public void removed(Player playerEntity) {
         super.removed(playerEntity);
         this.merchant.setTradingPlayer(null);
-        if (!playerEntity.level().isClientSide) {
+        if (!playerEntity.level.isClientSide) {
             if (!playerEntity.isAlive() || playerEntity instanceof ServerPlayer && ((ServerPlayer)playerEntity).hasDisconnected()) {
                 ItemStack itemStack = this.merchantInventory.removeItemNoUpdate(0);
                 if (!itemStack.isEmpty()) {

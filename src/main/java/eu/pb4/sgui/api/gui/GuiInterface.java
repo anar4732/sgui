@@ -1,7 +1,7 @@
 package eu.pb4.sgui.api.gui;
 
 import eu.pb4.sgui.api.ScreenProperty;
-import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.Registry;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ClientboundContainerSetDataPacket;
 import net.minecraft.server.level.ServerPlayer;
@@ -135,7 +135,7 @@ public interface GuiInterface {
      */
     default void sendProperty(ScreenProperty property, int value) {
         if (!property.validFor(this.getType())) {
-            throw new IllegalArgumentException(String.format("The property '%s' is not valid for the handler '%s'", property.name(), BuiltInRegistries.MENU.getKey(this.getType())));
+            throw new IllegalArgumentException(String.format("The property '%s' is not valid for the handler '%s'", property.name(), Registry.MENU.getKey(this.getType())));
         }
         if (this.isOpen()) {
             this.getPlayer().connection.send(new ClientboundContainerSetDataPacket(this.getSyncId(), property.id(), value));

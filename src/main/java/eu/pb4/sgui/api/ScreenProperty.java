@@ -1,7 +1,6 @@
 package eu.pb4.sgui.api;
 
 import net.minecraft.core.Registry;
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.inventory.MenuType;
 import org.apache.commons.lang3.ArrayUtils;
 
@@ -11,7 +10,7 @@ import org.apache.commons.lang3.ArrayUtils;
  * Screen properties are values sent to client {@link net.minecraft.world.inventory.AbstractContainerMenu}s which
  * update visual or logical elements of the screen. <br>
  * Screen properties are specific to the {@link MenuType} that they modify.
- * 
+ *
  * @see eu.pb4.sgui.api.gui.GuiInterface#sendProperty(ScreenProperty, int)
  */
 @SuppressWarnings("unused")
