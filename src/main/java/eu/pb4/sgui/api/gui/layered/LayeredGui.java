@@ -5,11 +5,10 @@ import eu.pb4.sgui.api.ClickType;
 import eu.pb4.sgui.api.GuiHelpers;
 import eu.pb4.sgui.api.elements.GuiElementInterface;
 import eu.pb4.sgui.api.gui.SlotGuiInterface;
-import net.minecraft.network.chat.Component;
-import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.inventory.MenuType;
-import net.minecraft.world.inventory.Slot;
-import org.jetbrains.annotations.ApiStatus;
+import net.minecraft.entity.player.ServerPlayerEntity;
+import net.minecraft.inventory.container.ContainerType;
+import net.minecraft.inventory.container.Slot;
+import net.minecraft.util.text.ITextComponent;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -38,10 +37,10 @@ public class LayeredGui implements SlotGuiInterface {
      * @param manipulatePlayerSlots if <code>true</code> the players inventory
      *                              will be treated as slots of this gui
      */
-    public LayeredGui(MenuType<?> type, ServerPlayer player, boolean manipulatePlayerSlots) {
+    public LayeredGui(ContainerType<?> type, ServerPlayerEntity player, boolean manipulatePlayerSlots) {
         int width = GuiHelpers.getWidth(type);
         if (width != 9) {
-            type = MenuType.GENERIC_9x3;
+            type = ContainerType.GENERIC_9x3;
         }
 
         this.height = GuiHelpers.getHeight(type) + (manipulatePlayerSlots ? 4 : 0);
@@ -166,28 +165,28 @@ public class LayeredGui implements SlotGuiInterface {
     }
 
 
-    public boolean onAnyClick(int index, ClickType type, net.minecraft.world.inventory.ClickType action) {
+    public boolean onAnyClick(int index, ClickType type, net.minecraft.inventory.container.ClickType action) {
         return true;
     }
 
     @Deprecated
-    @ApiStatus.Internal
-    public boolean click(int index, ClickType type, net.minecraft.world.inventory.ClickType action) {
+    
+    public boolean click(int index, ClickType type, net.minecraft.inventory.container.ClickType action) {
         return false;
     }
 
     @Override
-    public Component getTitle() {
+    public ITextComponent getTitle() {
         return this.gui.getTitle();
     }
 
     @Override
-    public void setTitle(Component title) {
+    public void setTitle(ITextComponent title) {
         this.gui.setTitle(title);
     }
 
     @Override
-    public MenuType<?> getType() {
+    public ContainerType<?> getType() {
         return this.gui.getType();
     }
 
@@ -235,7 +234,7 @@ public class LayeredGui implements SlotGuiInterface {
     }
 
     @Override
-    public ServerPlayer getPlayer() {
+    public ServerPlayerEntity getPlayer() {
         return this.gui.getPlayer();
     }
 

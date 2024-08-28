@@ -1,13 +1,13 @@
 package eu.pb4.sgui.api.gui;
 
 import eu.pb4.sgui.api.ScreenProperty;
-import net.minecraft.core.Registry;
-import net.minecraft.network.chat.Component;
-import net.minecraft.network.protocol.game.ClientboundContainerSetDataPacket;
-import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.inventory.MenuType;
-import org.jetbrains.annotations.ApiStatus;
-import org.jetbrains.annotations.Nullable;
+import net.minecraft.entity.player.ServerPlayerEntity;
+import net.minecraft.inventory.container.ContainerType;
+import net.minecraft.network.play.server.SWindowPropertyPacket;
+import net.minecraft.util.registry.Registry;
+import net.minecraft.util.text.ITextComponent;
+
+import javax.annotation.Nullable;
 
 @SuppressWarnings({"unused"})
 public interface GuiInterface {
@@ -17,7 +17,7 @@ public interface GuiInterface {
      *
      * @param title the new title
      */
-    void setTitle(Component title);
+    void setTitle(ITextComponent title);
 
     /**
      * Returns the title of the gui.
@@ -25,7 +25,7 @@ public interface GuiInterface {
      * @return the title of the gui or <code>null</code> if not set
      */
     @Nullable
-    Component getTitle();
+    ITextComponent getTitle();
 
     /**
      * Returns the {@link net.minecraft.world.inventory.AbstractContainerMenu} type that will be sent to the client. <br>
@@ -33,14 +33,14 @@ public interface GuiInterface {
      *
      * @return the screen handler type
      */
-    MenuType<?> getType();
+    ContainerType<?> getType();
 
     /**
      * Returns the player this gui was constructed for.
      *
      * @return the player
      */
-    ServerPlayer getPlayer();
+    ServerPlayerEntity getPlayer();
 
     /**
      * Returns the sync id used for communicating information about this screen between the server and client.
@@ -74,7 +74,6 @@ public interface GuiInterface {
      * @param alreadyClosed Is set to true, if gui's ScreenHandler is already closed
      * @see GuiInterface#onClose()
      */
-    @ApiStatus.Internal
     void close(boolean alreadyClosed);
 
     /**
@@ -138,13 +137,13 @@ public interface GuiInterface {
             throw new IllegalArgumentException(String.format("The property '%s' is not valid for the handler '%s'", property.name(), Registry.MENU.getKey(this.getType())));
         }
         if (this.isOpen()) {
-            this.getPlayer().connection.send(new ClientboundContainerSetDataPacket(this.getSyncId(), property.id(), value));
+            this.getPlayer().connection.send(new SWindowPropertyPacket(this.getSyncId(), property.id(), value));
         }
     }
 
     default void sendRawProperty(int id, int value) {
         if (this.isOpen()) {
-            this.getPlayer().connection.send(new ClientboundContainerSetDataPacket(this.getSyncId(), id, value));
+            this.getPlayer().connection.send(new SWindowPropertyPacket(this.getSyncId(), id, value));
         }
     }
 

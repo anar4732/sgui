@@ -7,18 +7,19 @@ import eu.pb4.sgui.virtual.hotbar.HotbarContainerMenu;
 import eu.pb4.sgui.virtual.inventory.VirtualSlot;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.ints.IntList;
-import net.minecraft.core.Direction;
-import net.minecraft.network.chat.Component;
-import net.minecraft.network.protocol.game.ClientboundSetCarriedItemPacket;
-import net.minecraft.network.protocol.game.ServerboundPlayerActionPacket;
-import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.util.Mth;
-import net.minecraft.world.inventory.MenuType;
-import net.minecraft.world.inventory.Slot;
-import net.minecraft.world.phys.BlockHitResult;
-import net.minecraft.world.phys.Vec3;
-import org.jetbrains.annotations.ApiStatus;
-import org.jetbrains.annotations.Nullable;
+import net.minecraft.entity.player.ServerPlayerEntity;
+import net.minecraft.inventory.container.ContainerType;
+import net.minecraft.inventory.container.Slot;
+import net.minecraft.network.play.client.CPlayerDiggingPacket;
+import net.minecraft.network.play.server.SHeldItemChangePacket;
+import net.minecraft.network.play.server.SWindowItemsPacket;
+import net.minecraft.util.Direction;
+import net.minecraft.util.math.BlockRayTraceResult;
+import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.math.vector.Vector3d;
+import net.minecraft.util.text.ITextComponent;
+
+import javax.annotation.Nullable;
 
 /**
  * It's a gui implementation for hotbar/player inventory usage
@@ -39,7 +40,7 @@ public class HotbarGui extends BaseSlotGui {
     private HotbarContainerMenu screenHandler;
     private int clicksPerTick;
 
-    public HotbarGui(ServerPlayer player) {
+    public HotbarGui(ServerPlayerEntity player) {
         super(player, SIZE);
     }
 
@@ -99,7 +100,7 @@ public class HotbarGui extends BaseSlotGui {
     }
 
     @Override
-    public boolean click(int index, ClickType type, net.minecraft.world.inventory.ClickType action) {
+    public boolean click(int index, ClickType type, net.minecraft.inventory.container.ClickType action) {
         return super.click(VANILLA_TO_GUI_IDS[index], type, action);
     }
 
@@ -129,7 +130,7 @@ public class HotbarGui extends BaseSlotGui {
         this.player.containerMenu = this.screenHandler;
 
         GuiHelpers.sendPlayerScreenHandler(this.player);
-        this.player.connection.send(new ClientboundSetCarriedItemPacket(this.selectedSlot));
+        this.player.connection.send(new SHeldItemChangePacket(this.selectedSlot));
     }
 
     /**
@@ -149,9 +150,9 @@ public class HotbarGui extends BaseSlotGui {
      */
     public void onClickItem() {
         if (this.player.isShiftKeyDown()) {
-            this.tickLimitedClick(this.selectedSlot, ClickType.MOUSE_RIGHT_SHIFT, net.minecraft.world.inventory.ClickType.QUICK_MOVE);
+            this.tickLimitedClick(this.selectedSlot, ClickType.MOUSE_RIGHT_SHIFT, net.minecraft.inventory.container.ClickType.QUICK_MOVE);
         } else {
-            this.tickLimitedClick(this.selectedSlot, ClickType.MOUSE_RIGHT, net.minecraft.world.inventory.ClickType.PICKUP);
+            this.tickLimitedClick(this.selectedSlot, ClickType.MOUSE_RIGHT, net.minecraft.inventory.container.ClickType.PICKUP);
         }
     }
 
@@ -161,9 +162,9 @@ public class HotbarGui extends BaseSlotGui {
      */
     public boolean onHandSwing() {
         if (this.player.isShiftKeyDown()) {
-            this.tickLimitedClick(this.selectedSlot, ClickType.MOUSE_LEFT_SHIFT, net.minecraft.world.inventory.ClickType.QUICK_MOVE);
+            this.tickLimitedClick(this.selectedSlot, ClickType.MOUSE_LEFT_SHIFT, net.minecraft.inventory.container.ClickType.QUICK_MOVE);
         } else {
-            this.tickLimitedClick(this.selectedSlot, ClickType.MOUSE_LEFT, net.minecraft.world.inventory.ClickType.PICKUP);
+            this.tickLimitedClick(this.selectedSlot, ClickType.MOUSE_LEFT, net.minecraft.inventory.container.ClickType.PICKUP);
         }
         return false;
     }
@@ -172,11 +173,11 @@ public class HotbarGui extends BaseSlotGui {
      * This method is called when player clicks block
      * If you return false, vanilla action will be canceled
      */
-    public boolean onClickBlock(BlockHitResult hitResult) {
+    public boolean onClickBlock(BlockRayTraceResult hitResult) {
         if (this.player.isShiftKeyDown()) {
-            this.tickLimitedClick(this.selectedSlot, ClickType.MOUSE_RIGHT_SHIFT, net.minecraft.world.inventory.ClickType.QUICK_MOVE);
+            this.tickLimitedClick(this.selectedSlot, ClickType.MOUSE_RIGHT_SHIFT, net.minecraft.inventory.container.ClickType.QUICK_MOVE);
         } else {
-            this.tickLimitedClick(this.selectedSlot, ClickType.MOUSE_RIGHT, net.minecraft.world.inventory.ClickType.PICKUP);
+            this.tickLimitedClick(this.selectedSlot, ClickType.MOUSE_RIGHT, net.minecraft.inventory.container.ClickType.PICKUP);
         }
 
         return false;
@@ -186,18 +187,18 @@ public class HotbarGui extends BaseSlotGui {
      * This method is called when player send PlayerAction packet
      * If you return false, vanilla action will be canceled
      */
-    public boolean onPlayerAction(ServerboundPlayerActionPacket.Action action, Direction direction) {
+    public boolean onPlayerAction(CPlayerDiggingPacket.Action action, Direction direction) {
         switch (action) {
-            case DROP_ITEM -> this.tickLimitedClick(this.selectedSlot, ClickType.DROP, net.minecraft.world.inventory.ClickType.THROW);
-            case DROP_ALL_ITEMS -> this.tickLimitedClick(this.selectedSlot, ClickType.CTRL_DROP, net.minecraft.world.inventory.ClickType.THROW);
+            case DROP_ITEM -> this.tickLimitedClick(this.selectedSlot, ClickType.DROP, net.minecraft.inventory.container.ClickType.THROW);
+            case DROP_ALL_ITEMS -> this.tickLimitedClick(this.selectedSlot, ClickType.CTRL_DROP, net.minecraft.inventory.container.ClickType.THROW);
             case STOP_DESTROY_BLOCK -> {
                 if (this.player.isShiftKeyDown()) {
-                    this.tickLimitedClick(this.selectedSlot, ClickType.MOUSE_LEFT_SHIFT, net.minecraft.world.inventory.ClickType.QUICK_MOVE);
+                    this.tickLimitedClick(this.selectedSlot, ClickType.MOUSE_LEFT_SHIFT, net.minecraft.inventory.container.ClickType.QUICK_MOVE);
                 } else {
-                    this.tickLimitedClick(this.selectedSlot, ClickType.MOUSE_LEFT, net.minecraft.world.inventory.ClickType.PICKUP);
+                    this.tickLimitedClick(this.selectedSlot, ClickType.MOUSE_LEFT, net.minecraft.inventory.container.ClickType.PICKUP);
                 }
             }
-            case SWAP_ITEM_WITH_OFFHAND -> this.tickLimitedClick(this.selectedSlot, ClickType.OFFHAND_SWAP, net.minecraft.world.inventory.ClickType.SWAP);
+            case SWAP_ITEM_WITH_OFFHAND -> this.tickLimitedClick(this.selectedSlot, ClickType.OFFHAND_SWAP, net.minecraft.inventory.container.ClickType.SWAP);
         }
 
         return false;
@@ -207,18 +208,18 @@ public class HotbarGui extends BaseSlotGui {
      * This method is called when player clicks an entity
      * If you return false, vanilla action will be canceled
      */
-    public boolean onClickEntity(int entityId, EntityInteraction type, boolean isSneaking, @Nullable Vec3 interactionPos) {
+    public boolean onClickEntity(int entityId, EntityInteraction type, boolean isSneaking, @Nullable Vector3d interactionPos) {
         if (type == EntityInteraction.ATTACK) {
             if (isSneaking) {
-                this.tickLimitedClick(this.selectedSlot, ClickType.MOUSE_LEFT_SHIFT, net.minecraft.world.inventory.ClickType.QUICK_MOVE);
+                this.tickLimitedClick(this.selectedSlot, ClickType.MOUSE_LEFT_SHIFT, net.minecraft.inventory.container.ClickType.QUICK_MOVE);
             } else {
-                this.tickLimitedClick(this.selectedSlot, ClickType.MOUSE_LEFT, net.minecraft.world.inventory.ClickType.PICKUP);
+                this.tickLimitedClick(this.selectedSlot, ClickType.MOUSE_LEFT, net.minecraft.inventory.container.ClickType.PICKUP);
             }
         } else {
             if (isSneaking) {
-                this.tickLimitedClick(this.selectedSlot, ClickType.MOUSE_RIGHT_SHIFT, net.minecraft.world.inventory.ClickType.QUICK_MOVE);
+                this.tickLimitedClick(this.selectedSlot, ClickType.MOUSE_RIGHT_SHIFT, net.minecraft.inventory.container.ClickType.QUICK_MOVE);
             } else {
-                this.tickLimitedClick(this.selectedSlot, ClickType.MOUSE_RIGHT, net.minecraft.world.inventory.ClickType.PICKUP);
+                this.tickLimitedClick(this.selectedSlot, ClickType.MOUSE_RIGHT, net.minecraft.inventory.container.ClickType.PICKUP);
             }
         }
         return false;
@@ -237,14 +238,14 @@ public class HotbarGui extends BaseSlotGui {
      * @param value slot between 0 and 8
      */
     public void setSelectedSlot(int value) {
-        this.selectedSlot = Mth.clamp(value, 0, 8);
+        this.selectedSlot = MathHelper.clamp(value, 0, 8);
         if (this.isOpen()) {
-            this.player.connection.send(new ClientboundSetCarriedItemPacket(this.selectedSlot));
+            this.player.connection.send(new SHeldItemChangePacket(this.selectedSlot));
         }
     }
 
-    @ApiStatus.Internal
-    private void tickLimitedClick(int selectedSlot, ClickType type, net.minecraft.world.inventory.ClickType actionType) {
+    
+    private void tickLimitedClick(int selectedSlot, ClickType type, net.minecraft.inventory.container.ClickType actionType) {
         if (this.clicksPerTick == 0) {
             this.click(GUI_TO_VANILLA_IDS[selectedSlot], type, actionType);
         }
@@ -262,10 +263,10 @@ public class HotbarGui extends BaseSlotGui {
         if ((this.isOpen() || screenHandlerIsClosed) && !this.reOpen) {
             if (!screenHandlerIsClosed && this.player.containerMenu == this.screenHandler) {
                 this.player.closeContainer();
-                this.player.connection.send(new ClientboundSetCarriedItemPacket(this.player.getInventory().selected));
+                this.player.connection.send(new SHeldItemChangePacket(this.player.inventory.selected));
             }
 
-            this.player.containerMenu.sendAllDataToRemote();
+	        player.connection.send(new SWindowItemsPacket(player.containerMenu.containerId, player.containerMenu.getItems()));
 
             this.onClose();
         } else {
@@ -312,7 +313,7 @@ public class HotbarGui extends BaseSlotGui {
 
     @Deprecated
     @Override
-    public MenuType<?> getType() {
+    public ContainerType<?> getType() {
         return null;
     }
 
@@ -330,13 +331,13 @@ public class HotbarGui extends BaseSlotGui {
 
     @Deprecated
     @Override
-    public @Nullable Component getTitle() {
+    public @Nullable ITextComponent getTitle() {
         return null;
     }
 
     @Deprecated
     @Override
-    public void setTitle(Component title) {
+    public void setTitle(ITextComponent title) {
 
     }
 

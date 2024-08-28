@@ -1,12 +1,12 @@
 package eu.pb4.sgui.virtual.inventory;
 
-import net.minecraft.world.Container;
-import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.inventory.Slot;
-import net.minecraft.world.item.ItemStack;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.inventory.IInventory;
+import net.minecraft.inventory.container.Slot;
+import net.minecraft.item.ItemStack;
 
 public class VirtualSlot extends Slot {
-    public VirtualSlot(Container inventory, int index, int x, int y) {
+    public VirtualSlot(IInventory inventory, int index, int x, int y) {
         super(inventory, index, x, y);
     }
 
@@ -16,21 +16,10 @@ public class VirtualSlot extends Slot {
     }
 
     @Override
-    public boolean mayPickup(Player playerEntity) {
+    public boolean mayPickup(PlayerEntity playerEntity) {
         return false;
     }
-
-    @Override
-    public boolean allowModification(Player player) {
-        return false;
-    }
-
-    @Override
-    public ItemStack safeInsert(ItemStack stack, int count) {
-        return stack;
-    }
-
-
+	
     @Override
     public void set(ItemStack stack) {
 

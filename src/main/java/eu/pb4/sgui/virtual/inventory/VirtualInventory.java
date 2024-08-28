@@ -2,12 +2,12 @@ package eu.pb4.sgui.virtual.inventory;
 
 import eu.pb4.sgui.api.elements.GuiElementInterface;
 import eu.pb4.sgui.api.gui.SlotGuiInterface;
-import net.minecraft.world.Container;
-import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.inventory.Slot;
-import net.minecraft.world.item.ItemStack;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.inventory.IInventory;
+import net.minecraft.inventory.container.Slot;
+import net.minecraft.item.ItemStack;
 
-public record VirtualInventory(SlotGuiInterface gui) implements Container {
+public record VirtualInventory(SlotGuiInterface gui) implements IInventory {
     @Override
     public int getContainerSize() {
         return this.gui.getSize();
@@ -64,7 +64,7 @@ public record VirtualInventory(SlotGuiInterface gui) implements Container {
     }
 
     @Override
-    public boolean stillValid(Player player) {
+    public boolean stillValid(PlayerEntity player) {
         return true;
     }
 

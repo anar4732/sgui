@@ -2,20 +2,20 @@ package eu.pb4.sgui.api.elements;
 
 import com.mojang.authlib.GameProfile;
 import eu.pb4.sgui.api.GuiHelpers;
-import net.minecraft.Util;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
-import net.minecraft.nbt.NbtUtils;
-import net.minecraft.nbt.StringTag;
-import net.minecraft.network.chat.Component;
+import net.minecraft.enchantment.Enchantment;
+import net.minecraft.enchantment.Enchantments;
+import net.minecraft.item.Item;
+import net.minecraft.item.ItemStack;
+import net.minecraft.item.Items;
+import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.nbt.ListNBT;
+import net.minecraft.nbt.NBTUtil;
+import net.minecraft.nbt.StringNBT;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.world.item.Item;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
-import net.minecraft.world.item.enchantment.Enchantment;
-import net.minecraft.world.item.enchantment.Enchantments;
-import org.jetbrains.annotations.Nullable;
+import net.minecraft.util.Util;
+import net.minecraft.util.text.ITextComponent;
 
+import javax.annotation.Nullable;
 import java.util.*;
 
 /**
@@ -33,10 +33,10 @@ public class AnimatedGuiElementBuilder implements GuiElementBuilderInterface<Ani
     protected final Map<Enchantment, Integer> enchantments = new HashMap<>();
     protected final List<ItemStack> itemStacks = new ArrayList<>();
     protected Item item = Items.STONE;
-    protected CompoundTag tag;
+    protected CompoundNBT tag;
     protected int count = 1;
-    protected Component name = null;
-    protected List<Component> lore = new ArrayList<>();
+    protected ITextComponent name = null;
+    protected List<ITextComponent> lore = new ArrayList<>();
     protected int damage = -1;
     protected GuiElement.ClickCallback callback = GuiElement.EMPTY_CALLBACK;
     protected byte hideFlags = 0;
@@ -111,7 +111,7 @@ public class AnimatedGuiElementBuilder implements GuiElementBuilderInterface<Ani
      * @param name the name to use
      * @return this element builder
      */
-    public AnimatedGuiElementBuilder setName(Component name) {
+    public AnimatedGuiElementBuilder setName(ITextComponent name) {
         this.name = name.copy();
         return this;
     }
@@ -133,7 +133,7 @@ public class AnimatedGuiElementBuilder implements GuiElementBuilderInterface<Ani
      * @param lore a list of all the lore lines
      * @return this element builder
      */
-    public AnimatedGuiElementBuilder setLore(List<Component> lore) {
+    public AnimatedGuiElementBuilder setLore(List<ITextComponent> lore) {
         this.lore = lore;
         return this;
     }
@@ -144,7 +144,7 @@ public class AnimatedGuiElementBuilder implements GuiElementBuilderInterface<Ani
      * @param lore the line to add
      * @return this element builder
      */
-    public AnimatedGuiElementBuilder addLoreLine(Component lore) {
+    public AnimatedGuiElementBuilder addLoreLine(ITextComponent lore) {
         this.lore.add(lore);
         return this;
     }
@@ -178,7 +178,7 @@ public class AnimatedGuiElementBuilder implements GuiElementBuilderInterface<Ani
      * @param section the section to hide
      * @return this element builder
      */
-    public AnimatedGuiElementBuilder hideFlag(ItemStack.TooltipPart section) {
+    public AnimatedGuiElementBuilder hideFlag(ItemStack.TooltipDisplayFlags section) {
         this.hideFlags = (byte) (this.hideFlags | section.getMask());
         return this;
     }
@@ -215,7 +215,7 @@ public class AnimatedGuiElementBuilder implements GuiElementBuilderInterface<Ani
      */
     public AnimatedGuiElementBuilder glow() {
         this.enchantments.put(Enchantments.FISHING_LUCK, 1);
-        return hideFlag(ItemStack.TooltipPart.ENCHANTMENTS);
+        return hideFlag(ItemStack.TooltipDisplayFlags.ENCHANTMENTS);
     }
 
     /**
@@ -236,7 +236,7 @@ public class AnimatedGuiElementBuilder implements GuiElementBuilderInterface<Ani
      */
     public AnimatedGuiElementBuilder unbreakable() {
         this.getOrCreateNbt().putBoolean("Unbreakable", true);
-        return hideFlag(ItemStack.TooltipPart.UNBREAKABLE);
+        return hideFlag(ItemStack.TooltipDisplayFlags.UNBREAKABLE);
     }
 
     /**
@@ -268,7 +268,7 @@ public class AnimatedGuiElementBuilder implements GuiElementBuilderInterface<Ani
             if (server.getSessionService().getTextures(profile, false).isEmpty()) {
                 profile = server.getSessionService().fillProfileProperties(profile, false);
             }
-			this.getOrCreateNbt().put("SkullOwner", NbtUtils.writeGameProfile(new CompoundTag(), profile));
+			this.getOrCreateNbt().put("SkullOwner", NBTUtil.writeGameProfile(new CompoundNBT(), profile));
         } else {
             this.getOrCreateNbt().putString("SkullOwner", profile.getName());
         }
@@ -286,10 +286,10 @@ public class AnimatedGuiElementBuilder implements GuiElementBuilderInterface<Ani
      * @return this element builder
      */
     public AnimatedGuiElementBuilder setSkullOwner(String value, @Nullable String signature, @Nullable UUID uuid) {
-        CompoundTag skullOwner = new CompoundTag();
-        CompoundTag properties = new CompoundTag();
-        CompoundTag valueData = new CompoundTag();
-        ListTag textures = new ListTag();
+        CompoundNBT skullOwner = new CompoundNBT();
+        CompoundNBT properties = new CompoundNBT();
+        CompoundNBT valueData = new CompoundNBT();
+        ListNBT textures = new ListNBT();
 
         valueData.putString("Value", value);
         if (signature != null) {
@@ -299,7 +299,7 @@ public class AnimatedGuiElementBuilder implements GuiElementBuilderInterface<Ani
         textures.add(valueData);
         properties.put("textures", textures);
 
-        skullOwner.put("Id", NbtUtils.createUUID(uuid != null ? uuid : Util.NIL_UUID));
+        skullOwner.put("Id", NBTUtil.createUUID(uuid != null ? uuid : Util.NIL_UUID));
         skullOwner.put("Properties", properties);
         this.getOrCreateNbt().put("SkullOwner", skullOwner);
 
@@ -348,11 +348,11 @@ public class AnimatedGuiElementBuilder implements GuiElementBuilderInterface<Ani
         }
 
         if (this.lore.size() > 0) {
-            CompoundTag display = itemStack.getOrCreateTagElement("display");
-            ListTag loreItems = new ListTag();
-            for (Component l : this.lore) {
+            CompoundNBT display = itemStack.getOrCreateTagElement("display");
+            ListNBT loreItems = new ListNBT();
+            for (ITextComponent l : this.lore) {
                 l = l.copy().withStyle(GuiHelpers.STYLE_CLEARER);
-                loreItems.add(StringTag.valueOf(Component.Serializer.toJson(l)));
+                loreItems.add(StringNBT.valueOf(ITextComponent.Serializer.toJson(l)));
             }
             display.put("Lore", loreItems);
         }
@@ -364,9 +364,9 @@ public class AnimatedGuiElementBuilder implements GuiElementBuilderInterface<Ani
         return itemStack;
     }
 
-    public CompoundTag getOrCreateNbt() {
+    public CompoundNBT getOrCreateNbt() {
         if (this.tag == null) {
-            this.tag = new CompoundTag();
+            this.tag = new CompoundNBT();
         }
         return this.tag;
     }

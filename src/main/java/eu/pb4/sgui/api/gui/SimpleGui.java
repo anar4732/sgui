@@ -6,17 +6,18 @@ import eu.pb4.sgui.api.elements.GuiElementInterface;
 import eu.pb4.sgui.virtual.SguiScreenHandlerFactory;
 import eu.pb4.sgui.virtual.inventory.VirtualContainerMenu;
 import eu.pb4.sgui.virtual.inventory.VirtualSlot;
-import net.minecraft.network.chat.Component;
-import net.minecraft.network.protocol.game.ClientboundContainerSetDataPacket;
-import net.minecraft.network.protocol.game.ClientboundOpenScreenPacket;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.entity.player.Inventory;
-import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.inventory.AbstractContainerMenu;
-import net.minecraft.world.inventory.MenuType;
-import net.minecraft.world.inventory.Slot;
-import net.minecraft.world.item.ItemStack;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.entity.player.PlayerInventory;
+import net.minecraft.entity.player.ServerPlayerEntity;
+import net.minecraft.inventory.container.Container;
+import net.minecraft.inventory.container.ContainerType;
+import net.minecraft.inventory.container.Slot;
+import net.minecraft.item.ItemStack;
+import net.minecraft.network.play.server.SOpenWindowPacket;
+import net.minecraft.network.play.server.SWindowItemsPacket;
+import net.minecraft.network.play.server.SWindowPropertyPacket;
+import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.text.ITextComponent;
 
 import java.util.OptionalInt;
 
@@ -30,14 +31,14 @@ import java.util.OptionalInt;
 public class SimpleGui extends BaseSlotGui {
     protected final int width;
     protected final int height;
-    protected final MenuType<?> type;
+    protected final ContainerType<?> type;
     private final boolean includePlayer;
     private final int sizeCont;
     protected boolean lockPlayerInventory = false;
     protected VirtualContainerMenu screenHandler = null;
     protected int syncId = -1;
     protected boolean hasRedirects = false;
-    private Component title = null;
+    private ITextComponent title = null;
 
     /**
      * Constructs a new simple container gui for the supplied player.
@@ -47,7 +48,7 @@ public class SimpleGui extends BaseSlotGui {
      * @param manipulatePlayerSlots if <code>true</code> the players inventory
      *                              will be treated as slots of this gui
      */
-    public SimpleGui(MenuType<?> type, ServerPlayer player, boolean manipulatePlayerSlots) {
+    public SimpleGui(ContainerType<?> type, ServerPlayerEntity player, boolean manipulatePlayerSlots) {
         super(player, GuiHelpers.getHeight(type) * GuiHelpers.getWidth(type) + (manipulatePlayerSlots ? 36 : 0));
         this.height = GuiHelpers.getHeight(type);
         this.width = GuiHelpers.getWidth(type);
@@ -106,17 +107,17 @@ public class SimpleGui extends BaseSlotGui {
     }
 
     @Override
-    public Component getTitle() {
+    public ITextComponent getTitle() {
         return this.title;
     }
 
     @Override
-    public void setTitle(Component title) {
+    public void setTitle(ITextComponent title) {
         this.title = title;
 
         if (this.isOpen()) {
-            this.player.connection.send(new ClientboundOpenScreenPacket(this.syncId, this.type, title));
-            this.screenHandler.sendAllDataToRemote();
+            this.player.connection.send(new SOpenWindowPacket(this.syncId, this.type, title));
+	        player.connection.send(new SWindowItemsPacket(player.containerMenu.containerId, player.containerMenu.getItems()));
         }
     }
 
@@ -191,7 +192,7 @@ public class SimpleGui extends BaseSlotGui {
     }
 
     @Override
-    public MenuType<?> getType() {
+    public ContainerType<?> getType() {
         return this.type;
     }
 
@@ -207,7 +208,7 @@ public class SimpleGui extends BaseSlotGui {
         }
     }
 
-    public AbstractContainerMenu openAsScreenHandler(int syncId, Inventory playerInventory, Player player) {
+    public Container openAsScreenHandler(int syncId, PlayerInventory playerInventory, PlayerEntity player) {
         if (this.player.hasDisconnected() || player != this.player || this.isOpen()) {
             return null;
         } else {
@@ -225,10 +226,10 @@ public class SimpleGui extends BaseSlotGui {
                 this.player.closeContainer();
                 this.screenHandler = null;
             }
-
-            this.player.containerMenu.sendAllDataToRemote();
-
-            this.onClose();
+	        
+	        player.connection.send(new SWindowItemsPacket(player.containerMenu.containerId, player.containerMenu.getItems()));
+	        
+	        this.onClose();
         } else {
             this.reOpen = false;
         }
@@ -260,7 +261,7 @@ public class SimpleGui extends BaseSlotGui {
      */
     @Deprecated
     public void sendProperty(int property, int value) {
-        this.player.connection.send(new ClientboundContainerSetDataPacket(this.syncId, property, value));
+        this.player.connection.send(new SWindowPropertyPacket(this.syncId, property, value));
     }
 
     @Deprecated

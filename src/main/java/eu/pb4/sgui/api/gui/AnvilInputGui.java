@@ -2,12 +2,11 @@ package eu.pb4.sgui.api.gui;
 
 import eu.pb4.sgui.api.GuiHelpers;
 import eu.pb4.sgui.api.elements.GuiElementInterface;
-import net.minecraft.network.chat.TextComponent;
-import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.inventory.MenuType;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
-import org.jetbrains.annotations.ApiStatus;
+import net.minecraft.entity.player.ServerPlayerEntity;
+import net.minecraft.inventory.container.ContainerType;
+import net.minecraft.item.ItemStack;
+import net.minecraft.item.Items;
+import net.minecraft.util.text.StringTextComponent;
 
 /**
  * Anvil Input Helper
@@ -32,8 +31,8 @@ public class AnvilInputGui extends SimpleGui {
      * @param manipulatePlayerSlots if <code>true</code> the players inventory
      *                              will be treated as slots of this gui
      */
-    public AnvilInputGui(ServerPlayer player, boolean manipulatePlayerSlots) {
-        super(MenuType.ANVIL, player, manipulatePlayerSlots);
+    public AnvilInputGui(ServerPlayerEntity player, boolean manipulatePlayerSlots) {
+        super(ContainerType.ANVIL, player, manipulatePlayerSlots);
         this.setDefaultInputValue("");
     }
 
@@ -44,7 +43,7 @@ public class AnvilInputGui extends SimpleGui {
      */
     public void setDefaultInputValue(String input) {
         ItemStack itemStack = Items.PAPER.getDefaultInstance();
-        itemStack.setHoverName(new TextComponent(input));
+        itemStack.setHoverName(new StringTextComponent(input));
         this.inputText = input;
         this.defaultText = input;
         this.setSlot(0, itemStack, ((index, type1, action, gui) -> {
@@ -74,7 +73,6 @@ public class AnvilInputGui extends SimpleGui {
     /**
      * Used internally to receive input from the client
      */
-    @ApiStatus.Internal
     public void input(String input) {
         this.inputText = input;
         this.onInput(input);

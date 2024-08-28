@@ -4,12 +4,12 @@ import com.mojang.authlib.GameProfile;
 import eu.pb4.sgui.impl.PlayerExtensions;
 import eu.pb4.sgui.virtual.SguiScreenHandlerFactory;
 import eu.pb4.sgui.virtual.VirtualContainerMenuInterface;
-import net.minecraft.core.BlockPos;
-import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.MenuProvider;
-import net.minecraft.world.damagesource.DamageSource;
-import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.level.Level;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.entity.player.ServerPlayerEntity;
+import net.minecraft.inventory.container.INamedContainerProvider;
+import net.minecraft.util.DamageSource;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.World;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
@@ -20,21 +20,21 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import java.util.OptionalInt;
 
-@Mixin(ServerPlayer.class)
-public abstract class ServerPlayerEntityMixin extends Player implements PlayerExtensions {
+@Mixin(ServerPlayerEntity.class)
+public abstract class ServerPlayerEntityMixin extends PlayerEntity implements PlayerExtensions {
     @Shadow
     public abstract void doCloseContainer();
 
     @Unique
     private boolean sgui$ignoreNext = false;
 	
-	public ServerPlayerEntityMixin(Level pLevel, BlockPos pPos, float pYRot, GameProfile pGameProfile, boolean sgui$ignoreNext) {
+	public ServerPlayerEntityMixin(World pLevel, BlockPos pPos, float pYRot, GameProfile pGameProfile, boolean sgui$ignoreNext) {
 		super(pLevel, pPos, pYRot, pGameProfile);
 		this.sgui$ignoreNext = sgui$ignoreNext;
 	}
 	
-	@Inject(method = "openMenu", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/level/ServerPlayer;closeContainer()V", shift = At.Shift.BEFORE))
-    private void sgui$dontForceCloseFor(MenuProvider factory, CallbackInfoReturnable<OptionalInt> cir) {
+	@Inject(method = "openMenu", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/player/ServerPlayerEntity;closeContainer()V", shift = At.Shift.BEFORE))
+    private void sgui$dontForceCloseFor(INamedContainerProvider factory, CallbackInfoReturnable<OptionalInt> cir) {
         if (factory instanceof SguiScreenHandlerFactory<?> sguiScreenHandlerFactory && !sguiScreenHandlerFactory.gui().resetMousePosition()) {
             this.sgui$ignoreNext = true;
         }

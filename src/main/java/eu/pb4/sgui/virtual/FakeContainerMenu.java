@@ -1,15 +1,15 @@
 package eu.pb4.sgui.virtual;
 
 import eu.pb4.sgui.api.gui.GuiInterface;
-import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.inventory.AbstractContainerMenu;
-import net.minecraft.world.item.ItemStack;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.inventory.container.Container;
+import net.minecraft.item.ItemStack;
 
 /**
  * Some guis don't use screen handlers (Sign or book input)
  * This is mostly utility class to simplify implementation
  */
-public class FakeContainerMenu extends AbstractContainerMenu implements VirtualContainerMenuInterface {
+public class FakeContainerMenu extends Container implements VirtualContainerMenuInterface {
     private final GuiInterface gui;
 
     public FakeContainerMenu(GuiInterface gui) {
@@ -23,7 +23,7 @@ public class FakeContainerMenu extends AbstractContainerMenu implements VirtualC
     }
 
     @Override
-    public boolean stillValid(Player player) {
+    public boolean stillValid(PlayerEntity player) {
         return true;
     }
 
@@ -38,7 +38,7 @@ public class FakeContainerMenu extends AbstractContainerMenu implements VirtualC
     }
 
     @Override
-    public ItemStack quickMoveStack(Player player, int index) {
+    public ItemStack quickMoveStack(PlayerEntity player, int index) {
         return ItemStack.EMPTY;
     }
 }

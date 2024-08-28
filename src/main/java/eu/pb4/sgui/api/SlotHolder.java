@@ -3,8 +3,8 @@ package eu.pb4.sgui.api;
 import eu.pb4.sgui.api.elements.GuiElement;
 import eu.pb4.sgui.api.elements.GuiElementBuilderInterface;
 import eu.pb4.sgui.api.elements.GuiElementInterface;
-import net.minecraft.world.inventory.Slot;
-import net.minecraft.world.item.ItemStack;
+import net.minecraft.inventory.container.Slot;
+import net.minecraft.item.ItemStack;
 
 @SuppressWarnings({"unused"})
 public interface SlotHolder {

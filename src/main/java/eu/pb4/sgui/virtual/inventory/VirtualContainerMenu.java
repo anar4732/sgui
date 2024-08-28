@@ -2,20 +2,21 @@ package eu.pb4.sgui.virtual.inventory;
 
 import eu.pb4.sgui.api.gui.SlotGuiInterface;
 import eu.pb4.sgui.virtual.VirtualContainerMenuInterface;
-import net.minecraft.world.entity.player.Inventory;
-import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.inventory.AbstractContainerMenu;
-import net.minecraft.world.inventory.ContainerListener;
-import net.minecraft.world.inventory.MenuType;
-import net.minecraft.world.inventory.Slot;
-import net.minecraft.world.item.ItemStack;
-import org.jetbrains.annotations.Nullable;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.entity.player.PlayerInventory;
+import net.minecraft.inventory.container.Container;
+import net.minecraft.inventory.container.ContainerType;
+import net.minecraft.inventory.container.IContainerListener;
+import net.minecraft.inventory.container.Slot;
+import net.minecraft.item.ItemStack;
 
-public class VirtualContainerMenu extends AbstractContainerMenu implements VirtualContainerMenuInterface {
+import javax.annotation.Nullable;
+
+public class VirtualContainerMenu extends Container implements VirtualContainerMenuInterface {
     private final SlotGuiInterface gui;
     public final VirtualInventory inventory;
 
-    public VirtualContainerMenu(@Nullable MenuType<?> type, int syncId, SlotGuiInterface gui, Player player) {
+    public VirtualContainerMenu(@Nullable ContainerType<?> type, int syncId, SlotGuiInterface gui, PlayerEntity player) {
         super(type, syncId);
         this.gui = gui;
 
@@ -23,7 +24,7 @@ public class VirtualContainerMenu extends AbstractContainerMenu implements Virtu
         setupSlots(player);
     }
 
-    protected void setupSlots(Player player) {
+    protected void setupSlots(PlayerEntity player) {
         int n;
         int m;
 
@@ -45,7 +46,7 @@ public class VirtualContainerMenu extends AbstractContainerMenu implements Virtu
                 }
             }
         } else {
-            Inventory playerInventory = player.getInventory();
+            PlayerInventory playerInventory = player.inventory;
             for (n = 0; n < 3; ++n) {
                 for (m = 0; m < 9; ++m) {
                     this.addSlot(new Slot(playerInventory, m + n * 9 + 9, 0, 0));
@@ -59,7 +60,7 @@ public class VirtualContainerMenu extends AbstractContainerMenu implements Virtu
     }
 
     @Override
-    public void addSlotListener(ContainerListener listener) {
+    public void addSlotListener(IContainerListener listener) {
         super.addSlotListener(listener);
         this.gui.afterOpen();
     }
@@ -70,12 +71,12 @@ public class VirtualContainerMenu extends AbstractContainerMenu implements Virtu
     }
 
     @Override
-    public boolean stillValid(Player player) {
+    public boolean stillValid(PlayerEntity player) {
         return true;
     }
 
     @Override
-    public void setItem(int slot, int i, ItemStack stack) {
+    public void setItem(int slot, ItemStack stack) {
         if (this.gui.getSize() <= slot) {
             this.getSlot(slot).set(stack);
         } else {
@@ -94,14 +95,14 @@ public class VirtualContainerMenu extends AbstractContainerMenu implements Virtu
     }
 
     @Override
-    public ItemStack quickMoveStack(Player player, int index) {
+    public ItemStack quickMoveStack(PlayerEntity player, int index) {
         ItemStack itemStack = ItemStack.EMPTY;
         Slot slot = this.slots.get(index);
         if (slot.hasItem() && !(slot instanceof VirtualSlot)) {
             ItemStack itemStack2 = slot.getItem();
             itemStack = itemStack2.copy();
             if (index < this.gui.getSize()) {
-                if (!this.moveItemStackTo(itemStack2, this.gui.getSize(), player.getInventory().items.size() + this.gui.getSize(), true)) {
+                if (!this.moveItemStackTo(itemStack2, this.gui.getSize(), player.inventory.items.size() + this.gui.getSize(), true)) {
                     return ItemStack.EMPTY;
                 }
             } else if (!this.moveItemStackTo(itemStack2, 0, this.gui.getSize(), false)) {
@@ -158,7 +159,7 @@ public class VirtualContainerMenu extends AbstractContainerMenu implements Virtu
 
                 itemStack = slot2.getItem();
 
-                if (!(slot2 instanceof VirtualSlot) && stack != itemStack && !itemStack.isEmpty() && ItemStack.isSameItemSameTags(stack, itemStack) && slot2.mayPlace(stack)) {
+                if (!(slot2 instanceof VirtualSlot) && stack != itemStack && !itemStack.isEmpty() && ItemStack.matches(stack, itemStack) && slot2.mayPlace(stack)) {
                     int j = itemStack.getCount() + stack.getCount();
                     int max = Math.min(slot2.getMaxStackSize(), stack.getMaxStackSize());
                     if (j <= max) {

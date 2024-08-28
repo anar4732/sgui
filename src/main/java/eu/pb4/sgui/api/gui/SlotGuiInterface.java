@@ -3,7 +3,6 @@ package eu.pb4.sgui.api.gui;
 import eu.pb4.sgui.api.ClickType;
 import eu.pb4.sgui.api.SlotHolder;
 import eu.pb4.sgui.api.elements.GuiElementInterface;
-import org.jetbrains.annotations.ApiStatus;
 
 public interface SlotGuiInterface extends SlotHolder, GuiInterface {
 
@@ -23,8 +22,7 @@ public interface SlotGuiInterface extends SlotHolder, GuiInterface {
      * @see SlotGuiInterface#onClick(int, ClickType, net.minecraft.world.inventory.ClickType, GuiElementInterface)
      * @see SlotGuiInterface#onAnyClick(int, ClickType, net.minecraft.world.inventory.ClickType)
      */
-    @ApiStatus.Internal
-    default boolean click(int index, ClickType type, net.minecraft.world.inventory.ClickType action) {
+    default boolean click(int index, ClickType type, net.minecraft.inventory.container.ClickType action) {
         GuiElementInterface element = this.getSlot(index);
         if (element != null) {
             element.getGuiCallback().click(index, type, action, this);
@@ -40,7 +38,7 @@ public interface SlotGuiInterface extends SlotHolder, GuiInterface {
      * @param action Minecraft's Slot Action Type
      * @return <code>true</code> if to allow manipulation of redirected slots, otherwise <code>false</code>
      */
-    default boolean onAnyClick(int index, ClickType type, net.minecraft.world.inventory.ClickType action) {
+    default boolean onAnyClick(int index, ClickType type, net.minecraft.inventory.container.ClickType action) {
         return true;
     }
 
@@ -53,7 +51,7 @@ public interface SlotGuiInterface extends SlotHolder, GuiInterface {
      * @param element Clicked GuiElement
      * @return Returns false, for automatic handling and syncing or true, if you want to do it manually
      */
-    default boolean onClick(int index, ClickType type, net.minecraft.world.inventory.ClickType action, GuiElementInterface element) {
+    default boolean onClick(int index, ClickType type, net.minecraft.inventory.container.ClickType action, GuiElementInterface element) {
         return false;
     }
 }

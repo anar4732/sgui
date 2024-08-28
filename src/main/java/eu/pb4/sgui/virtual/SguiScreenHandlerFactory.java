@@ -3,27 +3,27 @@ package eu.pb4.sgui.virtual;
 import eu.pb4.sgui.api.gui.GuiInterface;
 import eu.pb4.sgui.api.gui.SlotGuiInterface;
 import eu.pb4.sgui.virtual.inventory.VirtualContainerMenu;
-import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.TextComponent;
-import net.minecraft.world.MenuProvider;
-import net.minecraft.world.entity.player.Inventory;
-import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.inventory.AbstractContainerMenu;
-import net.minecraft.world.inventory.MenuConstructor;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.entity.player.PlayerInventory;
+import net.minecraft.inventory.container.Container;
+import net.minecraft.inventory.container.IContainerProvider;
+import net.minecraft.inventory.container.INamedContainerProvider;
+import net.minecraft.util.text.ITextComponent;
+import net.minecraft.util.text.StringTextComponent;
 
-public record SguiScreenHandlerFactory<T extends GuiInterface>(T gui, MenuConstructor factory) implements MenuProvider {
+public record SguiScreenHandlerFactory<T extends GuiInterface>(T gui, IContainerProvider factory) implements INamedContainerProvider {
 
     @Override
-    public Component getDisplayName() {
-        Component text = this.gui.getTitle();
+    public ITextComponent getDisplayName() {
+        ITextComponent text = this.gui.getTitle();
         if (text == null) {
-            text = new TextComponent("");
+            text = new StringTextComponent("");
         }
         return text;
     }
 
     @Override
-    public AbstractContainerMenu createMenu(int syncId, Inventory playerInventory, Player player) {
+    public Container createMenu(int syncId, PlayerInventory playerInventory, PlayerEntity player) {
         return factory.createMenu(syncId, playerInventory, player);
     }
 

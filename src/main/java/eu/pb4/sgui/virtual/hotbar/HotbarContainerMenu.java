@@ -5,18 +5,19 @@ import eu.pb4.sgui.api.gui.HotbarGui;
 import eu.pb4.sgui.api.gui.SlotGuiInterface;
 import eu.pb4.sgui.virtual.inventory.VirtualContainerMenu;
 import eu.pb4.sgui.virtual.inventory.VirtualSlot;
-import net.minecraft.core.NonNullList;
-import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.inventory.MenuType;
-import net.minecraft.world.inventory.Slot;
-import net.minecraft.world.item.ItemStack;
-import org.jetbrains.annotations.Nullable;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.inventory.container.ContainerType;
+import net.minecraft.inventory.container.Slot;
+import net.minecraft.item.ItemStack;
+import net.minecraft.util.NonNullList;
+
+import javax.annotation.Nullable;
 
 public class HotbarContainerMenu extends VirtualContainerMenu {
     private final int x = 0;
     public NonNullList<ItemStack> slotsOld = null;
 
-    public HotbarContainerMenu(@Nullable MenuType<?> type, int syncId, SlotGuiInterface gui, Player player) {
+    public HotbarContainerMenu(@Nullable ContainerType<?> type, int syncId, SlotGuiInterface gui, PlayerEntity player) {
         super(type, syncId, gui, player);
     }
 
@@ -26,7 +27,7 @@ public class HotbarContainerMenu extends VirtualContainerMenu {
     }
 
     @Override
-    protected void setupSlots(Player player) {
+    protected void setupSlots(PlayerEntity player) {
         for (int n = 0; n < this.getGui().getSize(); n++) {
             int nR = HotbarGui.VANILLA_TO_GUI_IDS[n];
             Slot slot = this.getGui().getSlotRedirect(nR);

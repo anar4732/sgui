@@ -1,7 +1,6 @@
 package eu.pb4.sgui.api;
 
-import net.minecraft.core.Registry;
-import net.minecraft.world.inventory.MenuType;
+import net.minecraft.inventory.container.ContainerType;
 import org.apache.commons.lang3.ArrayUtils;
 
 /**
@@ -24,11 +23,11 @@ public enum ScreenProperty {
      *     <li>Full = Value of MAX_FUEL_BURN_TIME</li>
      * </ul>
      */
-    FIRE_LEVEL(0, MenuType.FURNACE, MenuType.BLAST_FURNACE, MenuType.SMOKER),
+    FIRE_LEVEL(0, ContainerType.FURNACE, ContainerType.BLAST_FURNACE, ContainerType.SMOKER),
     /**
      * The maximum burn time of the furnace fuel
      */
-    MAX_FUEL_BURN_TIME(1, MenuType.FURNACE, MenuType.BLAST_FURNACE, MenuType.SMOKER),
+    MAX_FUEL_BURN_TIME(1, ContainerType.FURNACE, ContainerType.BLAST_FURNACE, ContainerType.SMOKER),
     /**
      * The current progress ticks of the arrow
      * <ul>
@@ -36,34 +35,34 @@ public enum ScreenProperty {
      *     <li>Complete = Value of MAX_PROGRESS</li>
      * </ul>
      */
-    CURRENT_PROGRESS(2, MenuType.FURNACE, MenuType.BLAST_FURNACE, MenuType.SMOKER),
+    CURRENT_PROGRESS(2, ContainerType.FURNACE, ContainerType.BLAST_FURNACE, ContainerType.SMOKER),
     /**
      * The ticks required for the burn to complete (200 on a vanilla server)
      */
-    MAX_PROGRESS(3, MenuType.FURNACE, MenuType.BLAST_FURNACE, MenuType.SMOKER),
+    MAX_PROGRESS(3, ContainerType.FURNACE, ContainerType.BLAST_FURNACE, ContainerType.SMOKER),
 
     /**
      * {@link MenuType#ENCHANTMENT}
      * <p>
      * The level requirement of the respective enchantment.
      */
-    TOP_LEVEL_REQ(0, MenuType.ENCHANTMENT),
-    MIDDLE_LEVEL_REQ(1, MenuType.ENCHANTMENT),
-    BOTTOM_LEVEL_REQ(2, MenuType.ENCHANTMENT),
+    TOP_LEVEL_REQ(0, ContainerType.ENCHANTMENT),
+    MIDDLE_LEVEL_REQ(1, ContainerType.ENCHANTMENT),
+    BOTTOM_LEVEL_REQ(2, ContainerType.ENCHANTMENT),
     /**
      * Used for drawing the enchantment names (in SGA) clientside.
      * <p>
      * The same seed is used to calculate enchantments, but some of the data isn't sent to the client to prevent easily guessing the entire list (the seed value here is the regular seed bitwise and 0xFFFFFFF0).
      */
-    ENCHANT_SEED(3, MenuType.ENCHANTMENT),
+    ENCHANT_SEED(3, ContainerType.ENCHANTMENT),
     /**
      * The enchantment id of the respective enchantment (set to -1 to hide).
      * <p>
      * To get the id use {@link Registry#getId(Object)} for {@link BuiltInRegistries#ENCHANTMENT}.
      */
-    TOP_ENCHANTMENT_ID(4, MenuType.ENCHANTMENT),
-    MIDDLE_ENCHANTMENT_ID(5, MenuType.ENCHANTMENT),
-    BOTTOM_ENCHANTMENT_ID(6, MenuType.ENCHANTMENT),
+    TOP_ENCHANTMENT_ID(4, ContainerType.ENCHANTMENT),
+    MIDDLE_ENCHANTMENT_ID(5, ContainerType.ENCHANTMENT),
+    BOTTOM_ENCHANTMENT_ID(6, ContainerType.ENCHANTMENT),
     /**
      * The enchantment level of the respective enchantment
      * <ul>
@@ -74,9 +73,9 @@ public enum ScreenProperty {
      *     <li>6 = VI</li>
      * </ul>
      */
-    TOP_ENCHANTMENT_LEVEL(7, MenuType.ENCHANTMENT),
-    MIDDLE_ENCHANTMENT_LEVEL(8, MenuType.ENCHANTMENT),
-    BOTTOM_ENCHANTMENT_LEVEL(9, MenuType.ENCHANTMENT),
+    TOP_ENCHANTMENT_LEVEL(7, ContainerType.ENCHANTMENT),
+    MIDDLE_ENCHANTMENT_LEVEL(8, ContainerType.ENCHANTMENT),
+    BOTTOM_ENCHANTMENT_LEVEL(9, ContainerType.ENCHANTMENT),
 
     /**
      * {@link MenuType#BEACON}
@@ -87,20 +86,20 @@ public enum ScreenProperty {
      *     <li>Full Beacon = 4</li>
      * </ul>
      */
-    POWER_LEVEL(0, MenuType.BEACON),
+    POWER_LEVEL(0, ContainerType.BEACON),
     /**
      * The effect id for the respective effect
      * To get the id use {@link Registry#getId(Object)} for {@link BuiltInRegistries#POTION}
      */
-    FIRST_EFFECT(1, MenuType.BEACON),
-    SECOND_EFFECT(2, MenuType.BEACON),
+    FIRST_EFFECT(1, ContainerType.BEACON),
+    SECOND_EFFECT(2, ContainerType.BEACON),
 
     /**
      * {@link MenuType#ANVIL}
      * <p>
      * The level cost of the operation. Anything >30 will display as 'Too Expensive!'
      */
-    LEVEL_COST(0, MenuType.ANVIL),
+    LEVEL_COST(0, ContainerType.ANVIL),
 
     /**
      * {@link MenuType#BREWING_STAND}
@@ -111,7 +110,7 @@ public enum ScreenProperty {
      *     <li>Full Arrow = 0</li>
      * </ul>
      */
-    BREW_TIME(0, MenuType.BREWING_STAND),
+    BREW_TIME(0, ContainerType.BREWING_STAND),
     /**
      * The ticks remaining in the fuel display
      * <ul>
@@ -119,7 +118,7 @@ public enum ScreenProperty {
      *     <li>Full Bubbles = 20</li>
      * </ul>
      */
-    POWDER_FUEL_TIME(1, MenuType.BREWING_STAND),
+    POWDER_FUEL_TIME(1, ContainerType.BREWING_STAND),
 
     /**
      * {@link MenuType#STONECUTTER}, {@link MenuType#LOOM}, {@link MenuType#LECTERN}
@@ -132,12 +131,12 @@ public enum ScreenProperty {
      *     <li><code>n</code> Element = <code>n</code></li>
      * </ul>
      */
-    SELECTED(0, MenuType.STONECUTTER, MenuType.LOOM, MenuType.LECTERN);
+    SELECTED(0, ContainerType.STONECUTTER, ContainerType.LOOM, ContainerType.LECTERN);
 
     private final int id;
-    private final MenuType<?>[] types;
+    private final ContainerType<?>[] types;
 
-    ScreenProperty(int id, MenuType<?>... types) {
+    ScreenProperty(int id, ContainerType<?>... types) {
         this.id = id;
         this.types = types;
     }
@@ -146,7 +145,7 @@ public enum ScreenProperty {
         return id;
     }
 
-    public boolean validFor(MenuType<?> type) {
+    public boolean validFor(ContainerType<?> type) {
         return ArrayUtils.contains(types, type);
     }
 }

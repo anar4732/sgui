@@ -1,20 +1,19 @@
 package eu.pb4.sgui.api.gui;
 
 import eu.pb4.sgui.virtual.FakeContainerMenu;
-import eu.pb4.sgui.virtual.sign.VirtualSignBlockEntity;
-import net.minecraft.core.BlockPos;
-import net.minecraft.network.chat.Component;
-import net.minecraft.network.protocol.game.ClientboundBlockUpdatePacket;
-import net.minecraft.network.protocol.game.ClientboundContainerClosePacket;
-import net.minecraft.network.protocol.game.ClientboundOpenSignEditorPacket;
-import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.block.Block;
+import net.minecraft.block.BlockState;
+import net.minecraft.block.Blocks;
+import net.minecraft.entity.player.ServerPlayerEntity;
+import net.minecraft.inventory.container.ContainerType;
+import net.minecraft.item.DyeColor;
+import net.minecraft.network.play.server.SChangeBlockPacket;
+import net.minecraft.network.play.server.SCloseWindowPacket;
+import net.minecraft.network.play.server.SOpenSignMenuPacket;
 import net.minecraft.tags.BlockTags;
-import net.minecraft.world.inventory.MenuType;
-import net.minecraft.world.item.DyeColor;
-import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.block.state.BlockState;
-import org.jetbrains.annotations.ApiStatus;
+import net.minecraft.tileentity.SignTileEntity;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.text.ITextComponent;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -36,26 +35,26 @@ import java.util.List;
  * item slots and a client ScreenHandler.
  */
 public class SignGui implements GuiInterface {
-
-    protected final VirtualSignBlockEntity signEntity;
+	
+	protected final SignTileEntity signEntity = new SignTileEntity();
     protected BlockState type = Blocks.OAK_SIGN.defaultBlockState();
     protected boolean autoUpdate = true;
 
     protected List<Integer> sendLineUpdate = new ArrayList<>(4);
-    protected final ServerPlayer player;
+    protected final ServerPlayerEntity player;
     protected boolean open = false;
     protected boolean reOpen = false;
     protected FakeContainerMenu screenHandler;
-    private final Component[] texts = new Component[4];
+    private final ITextComponent[] texts = new ITextComponent[4];
 
     /**
      * Constructs a new SignGui for the provided player
      *
      * @param player the player to serve this gui to
      */
-    public SignGui(ServerPlayer player)  {
+    public SignGui(ServerPlayerEntity player)  {
         this.player = player;
-        this.signEntity = new VirtualSignBlockEntity(new BlockPos(player.blockPosition().getX(), Math.min(player.level.getMaxBuildHeight() - 1, player.blockPosition().getY() + 5), player.blockPosition().getZ()), Blocks.OAK_SIGN.defaultBlockState());
+        this.signEntity.setPosition(new BlockPos(player.blockPosition().getX(), Math.min(player.level.getMaxBuildHeight() - 1, player.blockPosition().getY() + 5), player.blockPosition().getZ()));
     }
 
     /**
@@ -64,7 +63,7 @@ public class SignGui implements GuiInterface {
      * @param line the line index, from 0
      * @param text the Text for the line, note that all formatting is stripped when the player closes the sign
      */
-    public void setLine(int line, Component text) {
+    public void setLine(int line, ITextComponent text) {
         this.signEntity.setMessage(line, text);
         this.sendLineUpdate.add(line);
         this.texts[line] = text;
@@ -80,7 +79,7 @@ public class SignGui implements GuiInterface {
      * @param line the line number
      * @return the text on the line
      */
-    public Component getLine(int line) {
+    public ITextComponent getLine(int line) {
         return this.texts[line];
     }
 
@@ -103,7 +102,7 @@ public class SignGui implements GuiInterface {
      * @param type a block in the {@link BlockTags#SIGNS} tag
      */
     public void setSignType(Block type) {
-        if (!type.builtInRegistryHolder().is(BlockTags.SIGNS)) {
+        if (!type.is(BlockTags.SIGNS)) {
             throw new IllegalArgumentException("The type must be a sign");
         }
 
@@ -121,14 +120,14 @@ public class SignGui implements GuiInterface {
     public void updateSign() {
         if (this.player.containerMenu == this.screenHandler) {
             this.reOpen = true;
-            this.player.connection.send(new ClientboundContainerClosePacket(this.screenHandler.containerId));
+            this.player.connection.send(new SCloseWindowPacket(this.screenHandler.containerId));
         } else {
             this.open();
         }
     }
 
     @Override
-    public ServerPlayer getPlayer() {
+    public ServerPlayerEntity getPlayer() {
         return this.player;
     }
 	
@@ -149,9 +148,9 @@ public class SignGui implements GuiInterface {
         }
         this.player.containerMenu = this.screenHandler;
 
-        this.player.connection.send(new ClientboundBlockUpdatePacket(this.signEntity.getBlockPos(), this.type));
+        this.player.connection.send(new SChangeBlockPacket(this.signEntity.getBlockPos(), this.type));
         this.player.connection.send(this.signEntity.getUpdatePacket());
-        this.player.connection.send(new ClientboundOpenSignEditorPacket(this.signEntity.getBlockPos()));
+        this.player.connection.send(new SOpenSignMenuPacket(this.signEntity.getBlockPos()));
 
         this.reOpen = false;
         this.open = true;
@@ -165,7 +164,7 @@ public class SignGui implements GuiInterface {
             this.open = false;
             this.reOpen = false;
 
-            this.player.connection.send(new ClientboundBlockUpdatePacket(player.level, signEntity.getBlockPos()));
+            this.player.connection.send(new SChangeBlockPacket(player.level, signEntity.getBlockPos()));
 
             if (alreadyClosed && this.player.containerMenu == this.screenHandler) {
                 this.player.doCloseContainer();
@@ -193,8 +192,8 @@ public class SignGui implements GuiInterface {
     /**
      * Used internally to receive input from the client
      */
-    @ApiStatus.Internal
-    public void setLineInternal(int line, Component text) {
+    
+    public void setLineInternal(int line, ITextComponent text) {
         if (this.reOpen && this.sendLineUpdate.contains(line)) {
             this.sendLineUpdate.remove((Integer) line);
         } else {
@@ -205,18 +204,18 @@ public class SignGui implements GuiInterface {
 
     @Deprecated
     @Override
-    public void setTitle(Component title) {
+    public void setTitle(ITextComponent title) {
     }
 
     @Deprecated
     @Override
-    public Component getTitle() {
+    public ITextComponent getTitle() {
         return null;
     }
 
     @Deprecated
     @Override
-    public MenuType<?> getType() {
+    public ContainerType<?> getType() {
         return null;
     }
 
