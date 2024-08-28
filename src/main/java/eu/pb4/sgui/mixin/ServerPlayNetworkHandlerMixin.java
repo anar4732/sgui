@@ -312,7 +312,7 @@ public abstract class ServerPlayNetworkHandlerMixin {
         }
     }
 
-    @Inject(method = "method_44900", at = @At("HEAD"), cancellable = true)
+    @Inject(method = {"lambda$handleChat$10", "m_244887_", "method_44900"}, at = @At("HEAD"), cancellable = true)
     private void sgui$onMessage(ServerboundChatPacket packet, Optional<LastSeenMessages> optional, CallbackInfo ci) {
         if (this.player.containerMenu instanceof BookContainerMenu handler) {
             try {
@@ -325,7 +325,7 @@ public abstract class ServerPlayNetworkHandlerMixin {
         }
     }
 
-    @Inject(method = "method_44356", at = @At("HEAD"), cancellable = true)
+    @Inject(method = {"lambda$handleChatCommand$11", "m_244885_", "method_44356"}, at = @At("HEAD"), cancellable = true)
     private void sgui$onCommand(ServerboundChatCommandPacket packet, Optional<LastSeenMessages> optional, CallbackInfo ci) {
         if (this.player.containerMenu instanceof BookContainerMenu handler) {
             try {

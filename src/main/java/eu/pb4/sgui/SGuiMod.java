@@ -1,12 +1,10 @@
-package eu.pb4.sgui.testmod;
+package eu.pb4.sgui;
 
 import com.mojang.authlib.GameProfile;
 import com.mojang.brigadier.context.CommandContext;
 import eu.pb4.sgui.api.ClickType;
 import eu.pb4.sgui.api.elements.*;
 import eu.pb4.sgui.api.gui.SimpleGui;
-import net.fabricmc.api.ModInitializer;
-import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.minecraft.ChatFormatting;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
@@ -18,10 +16,16 @@ import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.enchantment.Enchantments;
+import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.event.RegisterCommandsEvent;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.fml.loading.FMLEnvironment;
 
 import java.util.UUID;
 
-public class SGuiTest implements ModInitializer {
+@Mod("sgui")
+public class SGuiMod {
 	private static int test(CommandContext<CommandSourceStack> context) {
 		try {
 			ServerPlayer player = context.getSource().getPlayer();
@@ -134,9 +138,14 @@ public class SGuiTest implements ModInitializer {
 		return 0;
 	}
 	
-	public void onInitialize() {
-		CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> {
-			dispatcher.register(Commands.literal("test").executes(SGuiTest::test));
-		});
+	public SGuiMod() {
+		if (!FMLEnvironment.production) {
+			MinecraftForge.EVENT_BUS.register(this);
+		}
+	}
+	
+	@SubscribeEvent
+	public void onRegisterCommands(RegisterCommandsEvent event) {
+		event.getDispatcher().register(Commands.literal("test").executes(SGuiMod::test));
 	}
 }
