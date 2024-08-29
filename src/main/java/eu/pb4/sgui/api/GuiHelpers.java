@@ -2,7 +2,7 @@ package eu.pb4.sgui.api;
 
 import eu.pb4.sgui.api.gui.GuiInterface;
 import eu.pb4.sgui.impl.PlayerExtensions;
-import eu.pb4.sgui.virtual.VirtualContainerMenuInterface;
+import eu.pb4.sgui.virtual.FakeContainerMenu;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Style;
 import net.minecraft.network.chat.TextColor;
@@ -20,7 +20,7 @@ public final class GuiHelpers {
 
     @Nullable
     public static GuiInterface getCurrentGui(ServerPlayer player) {
-        return player.containerMenu instanceof VirtualContainerMenuInterface v ? v.getGui() : null;
+        return player.containerMenu instanceof FakeContainerMenu v ? v.getGui() : null;
     }
 
     public static void ignoreNextGuiClosing(ServerPlayer player) {
@@ -77,5 +77,8 @@ public final class GuiHelpers {
         }
 
         return 9;
+    }
+
+    private GuiHelpers() {
     }
 }

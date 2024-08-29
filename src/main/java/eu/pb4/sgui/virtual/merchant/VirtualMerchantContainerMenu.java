@@ -136,7 +136,7 @@ public class VirtualMerchantContainerMenu extends VirtualContainerMenu {
         if (!stack.isEmpty()) {
             for(int i = 3; i < 39; ++i) {
                 ItemStack itemStack = this.slots.get(i).getItem();
-                if (!itemStack.isEmpty() && ItemStack.isSameItemSameTags(stack, itemStack)) {
+                if (!itemStack.isEmpty() && ItemStack.matches(stack, itemStack)) {
                     ItemStack itemStack2 = this.merchantInventory.getItem(slot);
                     int j = itemStack2.isEmpty() ? 0 : itemStack2.getCount();
                     int k = Math.min(stack.getMaxStackSize() - j, itemStack.getCount());

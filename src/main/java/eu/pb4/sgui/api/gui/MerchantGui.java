@@ -10,6 +10,7 @@ import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.inventory.MerchantContainer;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.trading.ItemCost;
 import net.minecraft.world.item.trading.MerchantOffer;
 import net.minecraft.world.item.trading.MerchantOffers;
 import org.jetbrains.annotations.Nullable;
@@ -63,7 +64,7 @@ public class MerchantGui extends SimpleGui {
                 && x.getSpecialPriceDiff() == y.getSpecialPriceDiff()
                 && ItemStack.matches(x.getResult(), y.getResult())
                 && ItemStack.matches(x.getBaseCostA(), y.getBaseCostA())
-                && ItemStack.matches(x.getCostB(), y.getCostB());
+                && ItemStack.matches(x.getItemCostB().map(ItemCost::itemStack).orElse(ItemStack.EMPTY), y.getItemCostB().map(ItemCost::itemStack).orElse(ItemStack.EMPTY));
 
     }
 

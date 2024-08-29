@@ -70,8 +70,8 @@ public class SGuiMod {
 					                               .glow()
 					                               .saveItemStack()
 					                               .setItem(Items.IRON_AXE)
-					                               .enchant(Enchantments.AQUA_AFFINITY, 1)
-					                               .hideFlags()
+					                               .enchant(player.server, Enchantments.AQUA_AFFINITY, 1)
+					                               .hideDefaultTooltip()
 					                               .saveItemStack()
 					                               .setItem(Items.STONE_AXE)
 					                               .saveItemStack()
@@ -139,7 +139,7 @@ public class SGuiMod {
 	}
 	
 	public SGuiMod() {
-		if (!FMLEnvironment.production) {
+		if (!FMLEnvironment.production || FMLEnvironment.dist.isClient()) {
 			MinecraftForge.EVENT_BUS.register(this);
 		}
 	}

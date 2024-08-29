@@ -13,6 +13,7 @@ import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.SignBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.ApiStatus;
 
@@ -29,7 +30,7 @@ import java.util.List;
  * so it hopefully goes unnoticed. The fake block is removed when the GUI is closed.
  * This also means in order to refresh the data on the sign, we must close and re-open the GUI,
  * as only handled screens have property support.
- * On the server side however, this sign GUI uses a custom {@link FakeContainerMenu} so the server
+ * On the server side however, this sign GUI uses a custom {@link FakeScreenHandler} so the server
  * can manage and trigger methods like onTIck, onClose, ect.
  * <p>
  * SignGui has lots of deprecated methods which have no function, mainly due to the lack of
@@ -56,6 +57,7 @@ public class SignGui implements GuiInterface {
     public SignGui(ServerPlayer player)  {
         this.player = player;
         this.signEntity = new VirtualSignBlockEntity(new BlockPos(player.blockPosition().getX(), Math.min(player.level().getMaxBuildHeight() - 1, player.blockPosition().getY() + 5), player.blockPosition().getZ()), Blocks.OAK_SIGN.defaultBlockState());
+		this.signEntity.setLevel(player.serverLevel());
     }
 
     /**
@@ -103,7 +105,7 @@ public class SignGui implements GuiInterface {
      * @param type a block in the {@link BlockTags#SIGNS} tag
      */
     public void setSignType(Block type) {
-        if (!type.builtInRegistryHolder().is(BlockTags.SIGNS)) {
+        if (!(type instanceof SignBlock)) {
             throw new IllegalArgumentException("The type must be a sign");
         }
 

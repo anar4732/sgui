@@ -1,22 +1,32 @@
 package eu.pb4.sgui.api.elements;
 
 import com.mojang.authlib.GameProfile;
-import eu.pb4.sgui.api.GuiHelpers;
-import net.minecraft.Util;
-import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.nbt.*;
+import com.mojang.authlib.minecraft.MinecraftProfileTextures;
+import com.mojang.authlib.properties.Property;
+import com.mojang.authlib.properties.PropertyMap;
+import net.minecraft.core.Holder;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.core.component.DataComponentType;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.util.Unit;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.Rarity;
+import net.minecraft.world.item.component.CustomModelData;
+import net.minecraft.world.item.component.ItemLore;
+import net.minecraft.world.item.component.ResolvableProfile;
+import net.minecraft.world.item.component.Unbreakable;
 import net.minecraft.world.item.enchantment.Enchantment;
-import net.minecraft.world.item.enchantment.Enchantments;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 
 /**
  * Gui Element Builder
@@ -28,15 +38,8 @@ import java.util.stream.Collectors;
  */
 @SuppressWarnings({"unused"})
 public class GuiElementBuilder implements GuiElementBuilderInterface<GuiElementBuilder> {
-    protected final Map<Enchantment, Integer> enchantments = new HashMap<>();
-    protected Item item = Items.STONE;
-    protected CompoundTag tag;
-    protected int count = 1;
-    protected Component name = null;
-    protected List<Component> lore = new ArrayList<>();
-    protected int damage = -1;
+    protected ItemStack itemStack = new ItemStack(Items.STONE);
     protected GuiElement.ClickCallback callback = GuiElementInterface.EMPTY_CALLBACK;
-    protected byte hideFlags = 0;
 
     /**
      * Constructs a GuiElementBuilder with the default options
@@ -50,7 +53,7 @@ public class GuiElementBuilder implements GuiElementBuilderInterface<GuiElementB
      * @param item the item to use
      */
     public GuiElementBuilder(Item item) {
-        this.item = item;
+        this.itemStack = new ItemStack(item);
     }
 
     /**
@@ -61,8 +64,16 @@ public class GuiElementBuilder implements GuiElementBuilderInterface<GuiElementB
      * @param count the number of items
      */
     public GuiElementBuilder(Item item, int count) {
-        this.item = item;
-        this.count = count;
+        this.itemStack = new ItemStack(item, count);
+    }
+
+    /**
+     * Constructs a GuiElementBuilder with the specified ItemStack
+     *
+     * @param stack  the item stack to use
+     */
+    public GuiElementBuilder(ItemStack stack) {
+        this.itemStack = stack.copy();
     }
 
     /**
@@ -72,46 +83,12 @@ public class GuiElementBuilder implements GuiElementBuilderInterface<GuiElementB
      * @return the constructed builder
      */
     public static GuiElementBuilder from(ItemStack stack) {
-        GuiElementBuilder builder = new GuiElementBuilder(stack.getItem(), stack.getCount());
-        if (!stack.hasTag()) {
-            return builder;
-        }
-        CompoundTag tag = stack.getTag().copy();
-
-        if (stack.hasCustomHoverName()) {
-            builder.setName(stack.getHoverName());
-            tag.getCompound("display").remove("Name");
-        }
-
-        if (tag.contains("display") && tag.getCompound("display").contains("Lore")) {
-            builder.setLore(GuiElementBuilder.getLore(stack));
-            tag.getCompound("display").remove("Lore");
-        }
-
-        if (stack.isDamaged()) {
-            builder.setDamage(stack.getDamageValue());
-            tag.remove("Damage");
-        }
-
-        if (stack.isEnchanted()) {
-            for (Tag enc : stack.getEnchantmentTags()) {
-                BuiltInRegistries.ENCHANTMENT.getOptional(ResourceLocation.tryParse(((CompoundTag) enc).getString("id"))).ifPresent(enchantment -> builder.enchant(enchantment, ((CompoundTag) enc).getInt("lvl")));
-            }
-            tag.remove("Enchantments");
-        }
-
-        if (stack.getOrCreateTag().contains("HideFlags")) {
-            builder.hideFlags(stack.getOrCreateTag().getByte("HideFlags"));
-            tag.remove("HideFlags");
-        }
-
-        builder.tag = tag;
-
-        return builder;
+        return new GuiElementBuilder(stack);
     }
 
+    @Deprecated
     public static List<Component> getLore(ItemStack stack) {
-        return stack.getOrCreateTagElement("display").getList("Lore", Tag.TAG_STRING).stream().map(tag -> Component.Serializer.fromJson(tag.getAsString())).collect(Collectors.toList());
+        return stack.getOrDefault(DataComponents.LORE, ItemLore.EMPTY).lines();
     }
 
     /**
@@ -121,7 +98,7 @@ public class GuiElementBuilder implements GuiElementBuilderInterface<GuiElementB
      * @return this element builder
      */
     public GuiElementBuilder setItem(Item item) {
-        this.item = item;
+        this.itemStack = new ItemStack(item.builtInRegistryHolder(), this.itemStack.getCount(), this.itemStack.getComponentsPatch());
         return this;
     }
 
@@ -132,7 +109,18 @@ public class GuiElementBuilder implements GuiElementBuilderInterface<GuiElementB
      * @return this element builder
      */
     public GuiElementBuilder setName(Component name) {
-        this.name = name.copy();
+        this.itemStack.set(DataComponents.ITEM_NAME, name.copy());
+        return this;
+    }
+
+    /**
+     * Sets the rarity of the element.
+     *
+     * @param rarity to use
+     * @return this element builder
+     */
+    public GuiElementBuilder setRarity(Rarity rarity) {
+        this.itemStack.set(DataComponents.RARITY, rarity);
         return this;
     }
 
@@ -143,7 +131,19 @@ public class GuiElementBuilder implements GuiElementBuilderInterface<GuiElementB
      * @return this element builder
      */
     public GuiElementBuilder setCount(int count) {
-        this.count = count;
+        this.itemStack.setCount(count);
+        return this;
+    }
+
+
+    /**
+     * Sets the max number of items in the element.
+     *
+     * @param count the number of items
+     * @return this element builder
+     */
+    public GuiElementBuilder setMaxCount(int count) {
+        this.itemStack.set(DataComponents.MAX_STACK_SIZE, count);
         return this;
     }
 
@@ -154,7 +154,7 @@ public class GuiElementBuilder implements GuiElementBuilderInterface<GuiElementB
      * @return this element builder
      */
     public GuiElementBuilder setLore(List<Component> lore) {
-        this.lore = lore;
+        this.itemStack.set(DataComponents.LORE, new ItemLore(lore));
         return this;
     }
 
@@ -165,7 +165,7 @@ public class GuiElementBuilder implements GuiElementBuilderInterface<GuiElementB
      * @return this element builder
      */
     public GuiElementBuilder addLoreLine(Component lore) {
-        this.lore.add(lore);
+        this.itemStack.update(DataComponents.LORE, ItemLore.EMPTY, lore, ItemLore::withLineAdded);
         return this;
     }
 
@@ -177,42 +177,68 @@ public class GuiElementBuilder implements GuiElementBuilderInterface<GuiElementB
      * @return this element builder
      */
     public GuiElementBuilder setDamage(int damage) {
-        this.damage = damage;
+        this.itemStack.set(DataComponents.DAMAGE, damage);
         return this;
     }
 
     /**
-     * Hides all {@link net.minecraft.world.item.ItemStack.TooltipPart}s from the element display
+     * Set the max damage of the element.
      *
+     * @param damage the amount of durability the item is missing
      * @return this element builder
      */
-    public GuiElementBuilder hideFlags() {
-        this.hideFlags = (byte) 0xFF;
+    public GuiElementBuilder setMaxDamage(int damage) {
+        this.itemStack.set(DataComponents.MAX_DAMAGE, damage);
         return this;
     }
 
     /**
-     * Hides a {@link net.minecraft.world.item.ItemStack.TooltipPart}
-     * from the elements display.
-     *
-     * @param section the section to hide
+     * Disables all default components on an item.
      * @return this element builder
      */
-    public GuiElementBuilder hideFlag(ItemStack.TooltipPart section) {
-        this.hideFlags = (byte) (this.hideFlags | section.getMask());
+    public GuiElementBuilder noDefaults() {
+        for (var x : this.itemStack.getItem().components()) {
+            if (this.itemStack.get(x.type()) == x.value()) {
+                this.itemStack.set(x.type(), null);
+            }
+        }
+        return this;
+    }
+
+    @Nullable
+    public <T> T getComponent(DataComponentType<T> type) {
+        return this.itemStack.get(type);
+    }
+
+    public <T> GuiElementBuilder setComponent(DataComponentType<T> type, @Nullable T value) {
+        this.itemStack.set(type, value);
         return this;
     }
 
     /**
-     * Set the {@link net.minecraft.world.item.ItemStack.TooltipPart}s to
-     * hide from the elements display, by the flags.
+     * Hides all component-item related tooltip added by item's or non name/lore components.
      *
-     * @param value the flags to hide
      * @return this element builder
-     * @see GuiElementBuilder#hideFlag(ItemStack.TooltipPart)
      */
-    public GuiElementBuilder hideFlags(byte value) {
-        this.hideFlags = value;
+    public GuiElementBuilder hideDefaultTooltip() {
+        this.itemStack.update(DataComponents.TRIM, null, comp -> comp != null ? comp.withTooltip(false) : null);
+        this.itemStack.update(DataComponents.UNBREAKABLE, null, comp -> comp != null ? comp.withTooltip(false) : null);
+        this.itemStack.update(DataComponents.ENCHANTMENTS, null, comp -> comp != null ? comp.withTooltip(false) : null);
+        this.itemStack.update(DataComponents.STORED_ENCHANTMENTS, null, comp -> comp != null ? comp.withTooltip(false) : null);
+        this.itemStack.update(DataComponents.ATTRIBUTE_MODIFIERS, null, comp -> comp != null ? comp.withTooltip(false) : null);
+        this.itemStack.update(DataComponents.DYED_COLOR, null, comp -> comp != null ? comp.withTooltip(false) : null);
+        this.itemStack.update(DataComponents.CAN_BREAK, null, comp -> comp != null ? comp.withTooltip(false) : null);
+        this.itemStack.update(DataComponents.CAN_PLACE_ON, null, comp -> comp != null ? comp.withTooltip(false) : null);
+        this.itemStack.set(DataComponents.HIDE_ADDITIONAL_TOOLTIP, Unit.INSTANCE);
+        return this;
+    }
+
+    /**
+     * Hides tooltip completely, making it never show
+     * @return this element builder
+     */
+    public GuiElementBuilder hideTooltip() {
+        this.itemStack.set(DataComponents.HIDE_TOOLTIP, Unit.INSTANCE);
         return this;
     }
 
@@ -223,9 +249,33 @@ public class GuiElementBuilder implements GuiElementBuilderInterface<GuiElementB
      * @param level       the level of the specified enchantment
      * @return this element builder
      */
-    public GuiElementBuilder enchant(Enchantment enchantment, int level) {
-        this.enchantments.put(enchantment, level);
+    public GuiElementBuilder enchant(Holder<Enchantment> enchantment, int level) {
+        this.itemStack.enchant(enchantment, level);
         return this;
+    }
+
+    /**
+     * Give the element the specified enchantment.
+     *
+     * @param server MinecraftServer
+     * @param enchantment the enchantment to apply
+     * @param level       the level of the specified enchantment
+     * @return this element builder
+     */
+    public GuiElementBuilder enchant(MinecraftServer server, ResourceKey<Enchantment> enchantment, int level) {
+        return enchant(server.registryAccess(), enchantment, level);
+    }
+
+    /**
+     * Give the element the specified enchantment.
+     *
+     * @param lookup WrapperLookup
+     * @param enchantment the enchantment to apply
+     * @param level       the level of the specified enchantment
+     * @return this element builder
+     */
+    public GuiElementBuilder enchant(HolderLookup.Provider lookup, ResourceKey<Enchantment> enchantment, int level) {
+        return enchant(lookup.lookupOrThrow(Registries.ENCHANTMENT).getOrThrow(enchantment), level);
     }
 
     /**
@@ -234,8 +284,18 @@ public class GuiElementBuilder implements GuiElementBuilderInterface<GuiElementB
      * @return this element builder
      */
     public GuiElementBuilder glow() {
-        this.enchantments.put(Enchantments.FISHING_LUCK, 1);
-        return hideFlag(ItemStack.TooltipPart.ENCHANTMENTS);
+        this.itemStack.set(DataComponents.ENCHANTMENT_GLINT_OVERRIDE, true);
+        return this;
+    }
+
+    /**
+     * Sets the element to have an enchantment glint.
+     *
+     * @return this element builder
+     */
+    public GuiElementBuilder glow(boolean value) {
+        this.itemStack.set(DataComponents.ENCHANTMENT_GLINT_OVERRIDE, value);
+        return this;
     }
 
     /**
@@ -245,7 +305,7 @@ public class GuiElementBuilder implements GuiElementBuilderInterface<GuiElementB
      * @return this element builder
      */
     public GuiElementBuilder setCustomModelData(int value) {
-        this.getOrCreateNbt().putInt("CustomModelData", value);
+        this.itemStack.set(DataComponents.CUSTOM_MODEL_DATA, new CustomModelData(value));
         return this;
     }
 
@@ -255,8 +315,8 @@ public class GuiElementBuilder implements GuiElementBuilderInterface<GuiElementB
      * @return this element builder
      */
     public GuiElementBuilder unbreakable() {
-        this.getOrCreateNbt().putBoolean("Unbreakable", true);
-        return hideFlag(ItemStack.TooltipPart.UNBREAKABLE);
+        this.itemStack.set(DataComponents.UNBREAKABLE, new Unbreakable(true));
+        return this;
     }
 
     /**
@@ -273,14 +333,15 @@ public class GuiElementBuilder implements GuiElementBuilderInterface<GuiElementB
      */
     public GuiElementBuilder setSkullOwner(GameProfile profile, @Nullable MinecraftServer server) {
         if (profile.getId() != null && server != null) {
-            if (server.getSessionService().getTextures(profile, false).isEmpty()) {
-                profile = server.getSessionService().fillProfileProperties(profile, false);
+            if (server.getSessionService().getTextures(profile) == MinecraftProfileTextures.EMPTY) {
+                var tmp = server.getSessionService().fetchProfile(profile.getId(), false);
+                if (tmp != null) {
+                    profile = tmp.profile();
+                }
             }
 
-            this.getOrCreateNbt().put("SkullOwner", NbtUtils.writeGameProfile(new CompoundTag(), profile));
-        } else {
-            this.getOrCreateNbt().putString("SkullOwner", profile.getName());
         }
+        this.itemStack.set(DataComponents.PROFILE, new ResolvableProfile(profile));
         return this;
     }
 
@@ -307,26 +368,12 @@ public class GuiElementBuilder implements GuiElementBuilderInterface<GuiElementB
      * @return this element builder
      */
     public GuiElementBuilder setSkullOwner(String value, @Nullable String signature, @Nullable UUID uuid) {
-        CompoundTag skullOwner = new CompoundTag();
-        CompoundTag properties = new CompoundTag();
-        CompoundTag valueData = new CompoundTag();
-        ListTag textures = new ListTag();
-
-        valueData.putString("Value", value);
-        if (signature != null) {
-            valueData.putString("Signature", signature);
-        }
-
-        textures.add(valueData);
-        properties.put("textures", textures);
-
-        skullOwner.put("Id", NbtUtils.createUUID(uuid != null ? uuid : Util.NIL_UUID));
-        skullOwner.put("Properties", properties);
-        this.getOrCreateNbt().put("SkullOwner", skullOwner);
-
+        PropertyMap map = new PropertyMap();
+        map.put("textures", new Property("textures", value, signature));
+        this.itemStack.set(DataComponents.PROFILE, new ResolvableProfile(Optional.empty(), Optional.ofNullable(uuid), map));
         return this;
     }
-
+    
     @Override
     public GuiElementBuilder setCallback(GuiElement.ClickCallback callback) {
         this.callback = callback;
@@ -348,52 +395,16 @@ public class GuiElementBuilder implements GuiElementBuilderInterface<GuiElementB
      * @see GuiElementBuilder#build()
      */
     public ItemStack asStack() {
-        ItemStack itemStack = new ItemStack(this.item, this.count);
-
-        if (this.tag != null) {
-            itemStack.getOrCreateTag().merge(this.tag);
-        }
-
-        if (this.name != null) {
-            var name = this.name.copy().withStyle(GuiHelpers.STYLE_CLEARER);
-
-            itemStack.setHoverName(name);
-        }
-
-        if (this.item.canBeDepleted() && this.damage != -1) {
-            itemStack.setDamageValue(damage);
-        }
-
-        for (Map.Entry<Enchantment, Integer> entry : this.enchantments.entrySet()) {
-            itemStack.enchant(entry.getKey(), entry.getValue());
-        }
-
-        if (this.lore.size() > 0) {
-            CompoundTag display = itemStack.getOrCreateTagElement("display");
-            ListTag loreItems = new ListTag();
-            for (Component l : this.lore) {
-                l = l.copy().withStyle(GuiHelpers.STYLE_CLEARER);
-                loreItems.add(StringTag.valueOf(Component.Serializer.toJson(l)));
-            }
-            display.put("Lore", loreItems);
-        }
-
-        if (this.hideFlags != 0) {
-            itemStack.getOrCreateTag().putByte("HideFlags", this.hideFlags);
-        }
-
-        return itemStack;
-    }
-
-    public CompoundTag getOrCreateNbt() {
-        if (this.tag == null) {
-            this.tag = new CompoundTag();
-        }
-        return this.tag;
+        return itemStack.copy();
     }
 
     @Override
     public GuiElement build() {
-        return new GuiElement(asStack(), this.callback);
+        return new GuiElement(this.itemStack, this.callback);
+    }
+
+    @Deprecated(forRemoval = true)
+    public GuiElementBuilder hideFlags() {
+        return this.hideDefaultTooltip();
     }
 }

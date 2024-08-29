@@ -6,6 +6,7 @@
     "refmap": "sgui.refmap.json",
     "mixins": [
         "ScreenHandlerMixin",
+        "ServerboundInteractPacketAccessor",
         "ServerPlayerEntityMixin",
         "ServerPlayNetworkHandlerMixin",
         "SignBlockEntityAccessor"

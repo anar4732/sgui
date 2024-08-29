@@ -158,7 +158,7 @@ public class VirtualContainerMenu extends AbstractContainerMenu implements Virtu
 
                 itemStack = slot2.getItem();
 
-                if (!(slot2 instanceof VirtualSlot) && stack != itemStack && !itemStack.isEmpty() && ItemStack.isSameItemSameTags(stack, itemStack) && slot2.mayPlace(stack)) {
+                if (!(slot2 instanceof VirtualSlot) && stack != itemStack && !itemStack.isEmpty() && ItemStack.matches(stack, itemStack) && slot2.mayPlace(stack)) {
                     int j = itemStack.getCount() + stack.getCount();
                     int max = Math.min(slot2.getMaxStackSize(), stack.getMaxStackSize());
                     if (j <= max) {

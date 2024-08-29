@@ -13,13 +13,16 @@ import eu.pb4.sgui.virtual.hotbar.HotbarContainerMenu;
 import eu.pb4.sgui.virtual.inventory.VirtualContainerMenu;
 import eu.pb4.sgui.virtual.merchant.VirtualMerchantContainerMenu;
 import io.netty.buffer.Unpooled;
+import net.minecraft.network.Connection;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.LastSeenMessages;
-import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.*;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.network.CommonListenerCookie;
 import net.minecraft.server.network.FilteredText;
+import net.minecraft.server.network.ServerCommonPacketListenerImpl;
 import net.minecraft.server.network.ServerGamePacketListenerImpl;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.ItemStack;
@@ -35,7 +38,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Mixin(ServerGamePacketListenerImpl.class)
-public abstract class ServerPlayNetworkHandlerMixin {
+public abstract class ServerPlayNetworkHandlerMixin extends ServerCommonPacketListenerImpl {
 
     @Unique
     private AbstractContainerMenu sgui$previousScreen = null;
@@ -43,7 +46,9 @@ public abstract class ServerPlayNetworkHandlerMixin {
     @Shadow
     public ServerPlayer player;
 	
-	@Shadow public abstract void send(Packet<?> packet);
+	public ServerPlayNetworkHandlerMixin(MinecraftServer pServer, Connection pConnection, CommonListenerCookie pCookie) {
+		super(pServer, pConnection, pCookie);
+	}
 	
 	@Inject(method = "handleContainerClick", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/level/ServerPlayer;resetLastActionTime()V", shift = At.Shift.AFTER), cancellable = true)
     private void sgui$handleGuiClicks(ServerboundContainerClickPacket packet, CallbackInfo ci) {
@@ -284,7 +289,7 @@ public abstract class ServerPlayNetworkHandlerMixin {
         if (this.player.containerMenu instanceof HotbarContainerMenu screenHandler) {
             var gui = screenHandler.getGui();
             var buf = new FriendlyByteBuf(Unpooled.buffer());
-            packet.write(buf);
+            ((ServerboundInteractPacketAccessor) packet).callWrite(buf);
 
             int entityId = buf.readVarInt();
             var type = buf.readEnum(HotbarGui.EntityInteraction.class);
@@ -312,7 +317,7 @@ public abstract class ServerPlayNetworkHandlerMixin {
         }
     }
 
-    @Inject(method = {"lambda$handleChat$10", "m_244887_", "method_44900"}, at = @At("HEAD"), cancellable = true)
+    @Inject(method = {"lambda$handleChat$6", "m_244887_"}, at = @At("HEAD"), cancellable = true)
     private void sgui$onMessage(ServerboundChatPacket packet, Optional<LastSeenMessages> optional, CallbackInfo ci) {
         if (this.player.containerMenu instanceof BookContainerMenu handler) {
             try {
@@ -325,8 +330,8 @@ public abstract class ServerPlayNetworkHandlerMixin {
         }
     }
 
-    @Inject(method = {"lambda$handleChatCommand$11", "m_244885_", "method_44356"}, at = @At("HEAD"), cancellable = true)
-    private void sgui$onCommand(ServerboundChatCommandPacket packet, Optional<LastSeenMessages> optional, CallbackInfo ci) {
+    @Inject(method = {"lambda$handleChatCommand$7", "m_317919_"}, at = @At("HEAD"), cancellable = true)
+    private void sgui$onCommand(ServerboundChatCommandPacket packet, CallbackInfo ci) {
         if (this.player.containerMenu instanceof BookContainerMenu handler) {
             try {
                 if (handler.getGui().onCommand("/" + packet.command())) {

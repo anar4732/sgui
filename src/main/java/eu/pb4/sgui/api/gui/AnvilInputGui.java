@@ -2,6 +2,7 @@ package eu.pb4.sgui.api.gui;
 
 import eu.pb4.sgui.api.GuiHelpers;
 import eu.pb4.sgui.api.elements.GuiElementInterface;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.inventory.MenuType;
@@ -44,7 +45,7 @@ public class AnvilInputGui extends SimpleGui {
      */
     public void setDefaultInputValue(String input) {
         ItemStack itemStack = Items.PAPER.getDefaultInstance();
-        itemStack.setHoverName(Component.literal(input));
+        itemStack.set(DataComponents.CUSTOM_NAME, Component.literal(input));
         this.inputText = input;
         this.defaultText = input;
         this.setSlot(0, itemStack, ((index, type1, action, gui) -> {
