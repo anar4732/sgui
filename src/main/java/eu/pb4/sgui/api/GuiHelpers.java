@@ -20,7 +20,12 @@ public final class GuiHelpers {
 
     @Nullable
     public static GuiInterface getCurrentGui(ServerPlayerEntity player) {
-        return player.containerMenu instanceof VirtualContainerMenuInterface v ? v.getGui() : null;
+	    if (player.containerMenu instanceof VirtualContainerMenuInterface) {
+		    VirtualContainerMenuInterface v = (VirtualContainerMenuInterface) player.containerMenu;
+		    return v.getGui();
+	    } else {
+		    return null;
+	    }
     }
 
     public static void ignoreNextGuiClosing(ServerPlayerEntity player) {

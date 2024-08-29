@@ -13,6 +13,7 @@ import net.minecraft.nbt.NBTUtil;
 import net.minecraft.nbt.StringNBT;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.Util;
+import net.minecraft.util.text.IFormattableTextComponent;
 import net.minecraft.util.text.ITextComponent;
 
 import javax.annotation.Nullable;
@@ -160,37 +161,17 @@ public class AnimatedGuiElementBuilder implements GuiElementBuilderInterface<Ani
         this.damage = damage;
         return this;
     }
-
-    /**
-     * Hides all {@link net.minecraft.world.item.ItemStack.TooltipPart}s from the current element display
-     *
-     * @return this element builder
-     */
+	
     public AnimatedGuiElementBuilder hideFlags() {
         this.hideFlags = 127;
         return this;
     }
-
-    /**
-     * Hides a {@link net.minecraft.world.item.ItemStack.TooltipPart}
-     * from the current elements display.
-     *
-     * @param section the section to hide
-     * @return this element builder
-     */
+	
     public AnimatedGuiElementBuilder hideFlag(ItemStack.TooltipDisplayFlags section) {
         this.hideFlags = (byte) (this.hideFlags | section.getMask());
         return this;
     }
-
-    /**
-     * Set the {@link net.minecraft.world.item.ItemStack.TooltipPart}s to
-     * hide from the current elements display, by the flags.
-     *
-     * @param value the flags to hide
-     * @return this element builder
-     * @see AnimatedGuiElementBuilder#hideFlag(ItemStack.TooltipPart)
-     */
+	
     public AnimatedGuiElementBuilder hideFlags(byte value) {
         this.hideFlags = value;
         return this;
@@ -334,8 +315,7 @@ public class AnimatedGuiElementBuilder implements GuiElementBuilderInterface<Ani
         }
 
         if (this.name != null) {
-            var name = this.name.copy().withStyle(GuiHelpers.STYLE_CLEARER);
-
+            IFormattableTextComponent name = this.name.copy().withStyle(GuiHelpers.STYLE_CLEARER);
             itemStack.setHoverName(name);
         }
 

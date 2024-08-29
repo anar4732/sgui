@@ -35,9 +35,12 @@ public abstract class ServerPlayerEntityMixin extends PlayerEntity implements Pl
 	
 	@Inject(method = "openMenu", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/player/ServerPlayerEntity;closeContainer()V", shift = At.Shift.BEFORE))
     private void sgui$dontForceCloseFor(INamedContainerProvider factory, CallbackInfoReturnable<OptionalInt> cir) {
-        if (factory instanceof SguiScreenHandlerFactory<?> sguiScreenHandlerFactory && !sguiScreenHandlerFactory.gui().resetMousePosition()) {
-            this.sgui$ignoreNext = true;
-        }
+		if (factory instanceof SguiScreenHandlerFactory<?>) {
+			SguiScreenHandlerFactory<?> sguiScreenHandlerFactory = (SguiScreenHandlerFactory<?>) factory;
+			if (!sguiScreenHandlerFactory.getGui().resetMousePosition()) {
+				this.sgui$ignoreNext = true;
+			}
+		}
     }
 
     @Inject(method = "closeContainer", at = @At("HEAD"), cancellable = true)
@@ -51,7 +54,8 @@ public abstract class ServerPlayerEntityMixin extends PlayerEntity implements Pl
 
     @Inject(method = "die", at = @At("TAIL"))
     private void sgui$onDeath(DamageSource source, CallbackInfo ci) {
-        if (this.containerMenu instanceof VirtualContainerMenuInterface handler) {
+        if (this.containerMenu instanceof VirtualContainerMenuInterface) {
+	        VirtualContainerMenuInterface handler = (VirtualContainerMenuInterface) this.containerMenu;
             handler.getGui().close(true);
         }
     }

@@ -12,6 +12,7 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.Util;
 import net.minecraft.util.registry.Registry;
+import net.minecraft.util.text.IFormattableTextComponent;
 import net.minecraft.util.text.ITextComponent;
 
 import javax.annotation.Nullable;
@@ -180,37 +181,17 @@ public class GuiElementBuilder implements GuiElementBuilderInterface<GuiElementB
         this.damage = damage;
         return this;
     }
-
-    /**
-     * Hides all {@link net.minecraft.world.item.ItemStack.TooltipPart}s from the element display
-     *
-     * @return this element builder
-     */
+	
     public GuiElementBuilder hideFlags() {
         this.hideFlags = (byte) 0xFF;
         return this;
     }
-
-    /**
-     * Hides a {@link net.minecraft.world.item.ItemStack.TooltipPart}
-     * from the elements display.
-     *
-     * @param section the section to hide
-     * @return this element builder
-     */
+	
     public GuiElementBuilder hideFlag(ItemStack.TooltipDisplayFlags section) {
         this.hideFlags = (byte) (this.hideFlags | section.getMask());
         return this;
     }
-
-    /**
-     * Set the {@link net.minecraft.world.item.ItemStack.TooltipPart}s to
-     * hide from the elements display, by the flags.
-     *
-     * @param value the flags to hide
-     * @return this element builder
-     * @see GuiElementBuilder#hideFlag(ItemStack.TooltipPart)
-     */
+	
     public GuiElementBuilder hideFlags(byte value) {
         this.hideFlags = value;
         return this;
@@ -355,8 +336,7 @@ public class GuiElementBuilder implements GuiElementBuilderInterface<GuiElementB
         }
 
         if (this.name != null) {
-            var name = this.name.copy().withStyle(GuiHelpers.STYLE_CLEARER);
-
+            IFormattableTextComponent name = this.name.copy().withStyle(GuiHelpers.STYLE_CLEARER);
             itemStack.setHoverName(name);
         }
 

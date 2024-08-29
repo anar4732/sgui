@@ -63,7 +63,7 @@ public class HotbarGui extends BaseSlotGui {
 
     private static int[] mergeArrays(int[]... idArrays) {
         IntList list = new IntArrayList(SIZE);
-        for (var array : idArrays) {
+        for (int[] array : idArrays) {
             for (int i : array) {
                 list.add(i);
             }
@@ -188,18 +188,24 @@ public class HotbarGui extends BaseSlotGui {
      * If you return false, vanilla action will be canceled
      */
     public boolean onPlayerAction(CPlayerDiggingPacket.Action action, Direction direction) {
-        switch (action) {
-            case DROP_ITEM -> this.tickLimitedClick(this.selectedSlot, ClickType.DROP, net.minecraft.inventory.container.ClickType.THROW);
-            case DROP_ALL_ITEMS -> this.tickLimitedClick(this.selectedSlot, ClickType.CTRL_DROP, net.minecraft.inventory.container.ClickType.THROW);
-            case STOP_DESTROY_BLOCK -> {
-                if (this.player.isShiftKeyDown()) {
-                    this.tickLimitedClick(this.selectedSlot, ClickType.MOUSE_LEFT_SHIFT, net.minecraft.inventory.container.ClickType.QUICK_MOVE);
-                } else {
-                    this.tickLimitedClick(this.selectedSlot, ClickType.MOUSE_LEFT, net.minecraft.inventory.container.ClickType.PICKUP);
-                }
-            }
-            case SWAP_ITEM_WITH_OFFHAND -> this.tickLimitedClick(this.selectedSlot, ClickType.OFFHAND_SWAP, net.minecraft.inventory.container.ClickType.SWAP);
-        }
+	    switch (action) {
+		    case DROP_ITEM:
+			    this.tickLimitedClick(this.selectedSlot, ClickType.DROP, net.minecraft.inventory.container.ClickType.THROW);
+			    break;
+		    case DROP_ALL_ITEMS:
+			    this.tickLimitedClick(this.selectedSlot, ClickType.CTRL_DROP, net.minecraft.inventory.container.ClickType.THROW);
+			    break;
+		    case STOP_DESTROY_BLOCK:
+			    if (this.player.isShiftKeyDown()) {
+				    this.tickLimitedClick(this.selectedSlot, ClickType.MOUSE_LEFT_SHIFT, net.minecraft.inventory.container.ClickType.QUICK_MOVE);
+			    } else {
+				    this.tickLimitedClick(this.selectedSlot, ClickType.MOUSE_LEFT, net.minecraft.inventory.container.ClickType.PICKUP);
+			    }
+			    break;
+		    case SWAP_ITEM_WITH_OFFHAND:
+			    this.tickLimitedClick(this.selectedSlot, ClickType.OFFHAND_SWAP, net.minecraft.inventory.container.ClickType.SWAP);
+			    break;
+	    }
 
         return false;
     }
