@@ -14,7 +14,6 @@ import net.minecraft.util.Util;
 import net.minecraft.util.registry.Registry;
 import net.minecraft.util.text.IFormattableTextComponent;
 import net.minecraft.util.text.ITextComponent;
-import net.minecraft.util.text.TextComponent;
 
 import javax.annotation.Nullable;
 import java.util.*;
@@ -138,7 +137,7 @@ public class GuiElementBuilder implements GuiElementBuilderInterface<GuiElementB
         return this;
     }
 	
-	public GuiElementBuilder setName(TextComponent name) {
+	public GuiElementBuilder setName(IFormattableTextComponent name) {
         this.name = name;
         return this;
     }
