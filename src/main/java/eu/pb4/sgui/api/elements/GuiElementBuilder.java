@@ -10,6 +10,7 @@ import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.Unit;
@@ -123,6 +124,10 @@ public class GuiElementBuilder implements GuiElementBuilderInterface<GuiElementB
         this.itemStack.set(DataComponents.RARITY, rarity);
         return this;
     }
+	
+	public GuiElementBuilder setName(MutableComponent name) {
+		return this.setName((Component)name);
+	}
 
     /**
      * Sets the number of items in the element.
