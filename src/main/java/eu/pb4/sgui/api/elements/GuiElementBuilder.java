@@ -6,6 +6,7 @@ import net.minecraft.Util;
 import net.minecraft.core.Registry;
 import net.minecraft.nbt.*;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.item.Item;
@@ -135,6 +136,10 @@ public class GuiElementBuilder implements GuiElementBuilderInterface<GuiElementB
         this.name = name.copy();
         return this;
     }
+	
+	public GuiElementBuilder setName(MutableComponent name) {
+		return this.setName((Component)name);
+	}
 
     /**
      * Sets the number of items in the element.
